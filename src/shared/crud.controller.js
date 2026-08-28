@@ -4,11 +4,11 @@ const mkController = (svc, key) => {
         catch (e) { res.status(e.statusCode || 500).json({ success: false, message: e.message }); }
     };
     return {
-        getAll:  wrap((req, res) => res.json({ success: true, [key]: svc.getAll() })),
-        getById: wrap((req, res) => res.json({ success: true, [key.slice(0,-1)]: svc.getById(req.params.id) })),
-        create:  wrap((req, res) => res.status(201).json({ success: true, [key.slice(0,-1)]: svc.create(req.body) })),
-        update:  wrap((req, res) => res.json({ success: true, [key.slice(0,-1)]: svc.update(req.params.id, req.body) })),
-        remove:  wrap((req, res) => { svc.remove(req.params.id); res.json({ success: true, message: 'Eliminado correctamente.' }); }),
+        getAll:  wrap(async (req, res) => res.json({ success: true, [key]: await svc.getAll() })),
+        getById: wrap(async (req, res) => res.json({ success: true, [key.slice(0,-1)]: await svc.getById(req.params.id) })),
+        create:  wrap(async (req, res) => res.status(201).json({ success: true, [key.slice(0,-1)]: await svc.create(req.body) })),
+        update:  wrap(async (req, res) => res.json({ success: true, [key.slice(0,-1)]: await svc.update(req.params.id, req.body) })),
+        remove:  wrap(async (req, res) => { await svc.remove(req.params.id); res.json({ success: true, message: 'Eliminado correctamente.' }); }),
     };
 };
 

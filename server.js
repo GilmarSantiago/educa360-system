@@ -15,8 +15,8 @@ process.env.TZ = 'America/Lima';
 // Importa la instancia de la aplicación Express ya configurada con rutas y middlewares
 const app = require('./src/app');
 
-// Importa la función encargada de preparar o verificar la base de datos local
-const { initDb } = require('./src/db/localDb');
+// Importa la función encargada de inicializar el pool de la base de datos
+const { initDb } = require('./src/db');
 
 // Define el puerto donde correrá el servidor (variable de entorno PORT o por defecto 5000)
 const PORT = process.env.PORT || 5000;

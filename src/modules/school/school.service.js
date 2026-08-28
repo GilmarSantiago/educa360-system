@@ -13,8 +13,8 @@ const schoolRepository = require('./school.repository');
  * Obtiene la configuración actual de la escuela.
  * @returns {Object} Objeto con los datos de configuración (nombre, logo, métodos de pago, etc).
  */
-const getSchool = () => {
-    return schoolRepository.getSchool();
+const getSchool = async () => {
+    return await schoolRepository.findById(1);
 };
 
 /**
@@ -25,13 +25,15 @@ const getSchool = () => {
  * @param {Object} file - Archivo de imagen subido (multer file object) para el logo.
  * @returns {Object} La configuración escolar actualizada.
  */
-const updateSchool = (data, file) => {
+const updateSchool = async (data, file) => {
     // Se clonan los datos para evitar mutar el objeto original
     const updateData = { ...data };
 
     // Si los métodos de pago vienen en un string separado por comas (ej. desde form-data), se convierten a un array
     if (updateData.paymentMethods && typeof updateData.paymentMethods === 'string') {
-        updateData.paymentMethods = updateData.paymentMethods.split(',').map(s => s.trim()).filter(s => s);
+        updateData.paymentMethods = JSON.stringify(updateData.paymentMethods.split(',').map(s => s.trim()).filter(s => s));
+    } else if (updateData.paymentMethods) {
+        updateData.paymentMethods = JSON.stringify(updateData.paymentMethods);
     }
     
     // Normalizar el valor booleano, ya que form-data envía strings ('true' o 'false')
@@ -41,11 +43,11 @@ const updateSchool = (data, file) => {
 
     // Si se adjuntó un nuevo logo en la petición
     if (file) {
-        const currentSchool = schoolRepository.getSchool();
+        const currentSchool = await schoolRepository.findById(1);
         updateData.logo = '/uploads/school/' + file.filename; // Se guarda la ruta relativa de la nueva imagen
 
         // Eliminar el logo antiguo físicamente del servidor local para no acumular archivos huérfanos
-        if (currentSchool.logo && currentSchool.logo.startsWith('/uploads/school/')) {
+        if (currentSchool && currentSchool.logo && currentSchool.logo.startsWith('/uploads/school/')) {
             const oldPath = path.join(__dirname, '..', '..', '..', 'public', currentSchool.logo);
             if (fs.existsSync(oldPath)) {
                 fs.unlinkSync(oldPath);
@@ -54,7 +56,7 @@ const updateSchool = (data, file) => {
     }
 
     // Guardar los datos procesados en la base de datos
-    return schoolRepository.updateSchool(updateData);
+    return await schoolRepository.update(1, updateData);
 };
 
 module.exports = { getSchool, updateSchool };

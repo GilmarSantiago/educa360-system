@@ -8,8 +8,8 @@ const path = require('path');
 const fs = require('fs');
 const profileRepository = require('./profile.repository');
 
-const getProfile = (userId) => {
-    const user = profileRepository.findById(userId);
+const getProfile = async (userId) => {
+    const user = await profileRepository.findById(userId);
     if (!user) {
         const error = new Error('Usuario no encontrado.');
         error.statusCode = 404;
@@ -21,8 +21,8 @@ const getProfile = (userId) => {
     return userSafe;
 };
 
-const updateProfile = (userId, data, file) => {
-    const oldUser = profileRepository.findById(userId);
+const updateProfile = async (userId, data, file) => {
+    const oldUser = await profileRepository.findById(userId);
     if (!oldUser) {
         const error = new Error('Usuario no encontrado.');
         error.statusCode = 404;
@@ -57,7 +57,7 @@ const updateProfile = (userId, data, file) => {
         }
     }
 
-    const updatedUser = profileRepository.update(userId, updateData);
+    const updatedUser = await profileRepository.update(userId, updateData);
     return { user: updatedUser, requiresReauth };
 };
 

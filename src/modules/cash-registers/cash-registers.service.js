@@ -1,50 +1,49 @@
 const repo = require('./cash-registers.repository');
+const { query } = require('../../db');
 
-const getCurrentSession = (userId) => {
-    const session = repo.getCurrentSession(userId);
+const getCurrentSession = async (userId) => {
+    const session = await repo.getCurrentSession(userId);
     if (!session) return null;
     
-    // Adjuntar total de ventas calculadas
-    const { totalSales, sessionPayments, salesByMethod } = repo.getSessionSales(userId, session.id);
+    const { totalSales, sessionPayments, salesByMethod } = await repo.getSessionSales(userId, session.id);
     return {
         ...session,
         totalSales,
         paymentsCount: sessionPayments.length,
-        systemCalculatedAmount: session.initialAmount + totalSales,
+        systemCalculatedAmount: Number(session.initialAmount) + totalSales,
         salesByMethod,
-        sessionPayments // Envía la lista detallada
+        sessionPayments
     };
 };
 
-const openSession = (userId, initialAmount) => {
+const openSession = async (userId, initialAmount) => {
     if (initialAmount === undefined || initialAmount < 0) {
         throw new Error('El monto inicial no es válido.');
     }
-    return repo.openSession(userId, initialAmount);
+    return await repo.openSession(userId, initialAmount);
 };
 
-const closeSession = (userId, pin) => {
+const closeSession = async (userId, pin) => {
     if (!pin) {
         throw new Error('Debe proveer un código de autorización.');
     }
-    const { getConfig, saveConfig } = require('../../db/localDb');
-    const config = getConfig();
-    const validTokenIndex = (config.closureTokens || []).findIndex(t => t.token === pin && t.expiresAt > Date.now());
     
-    if (validTokenIndex === -1) {
+    // Validar token desde la tabla closureTokens
+    const resToken = await query('SELECT * FROM "closureTokens" WHERE token = $1 AND "expiresAt" > CURRENT_TIMESTAMP', [pin]);
+    const tokenData = resToken.rows[0];
+    
+    if (!tokenData) {
         throw new Error('Código de autorización inválido o expirado.');
     }
     
-    const tokenData = config.closureTokens[validTokenIndex];
     // Eliminar token usado
-    config.closureTokens.splice(validTokenIndex, 1);
-    saveConfig(config);
+    await query('DELETE FROM "closureTokens" WHERE token = $1', [pin]);
 
-    return repo.closeSession(userId, tokenData.userId);
+    return await repo.closeSession(userId, tokenData.generatedBy);
 };
 
-const getHistory = () => {
-    return repo.getHistory();
+const getHistory = async () => {
+    return await repo.getHistory();
 };
 
 module.exports = {

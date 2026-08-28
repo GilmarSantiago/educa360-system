@@ -1,21 +1,9 @@
-/**
- * SCHOOL REPOSITORY
- * 
- * Acceso a datos para la configuración institucional.
- */
+const BaseRepository = require('../../shared/BaseRepository');
 
-const { getConfig, saveConfig } = require('../../db/localDb');
+class Repository extends BaseRepository {
+    constructor() {
+        super('school'); 
+    }
+}
 
-const getSchool = () => {
-    const config = getConfig();
-    return config.school || {};
-};
-
-const updateSchool = (data) => {
-    const config = getConfig();
-    config.school = { ...(config.school || {}), ...data };
-    saveConfig(config);
-    return config.school;
-};
-
-module.exports = { getSchool, updateSchool };
+module.exports = new Repository();

@@ -6,18 +6,18 @@
 
 const profileService = require('./profile.service');
 
-const getProfile = (req, res) => {
+const getProfile = async (req, res) => {
     try {
-        const user = profileService.getProfile(req.user.id);
+        const user = await profileService.getProfile(req.user.id);
         res.json({ success: true, user });
     } catch (err) {
         res.status(err.statusCode || 500).json({ success: false, message: err.message });
     }
 };
 
-const updateProfile = (req, res) => {
+const updateProfile = async (req, res) => {
     try {
-        const { user, requiresReauth } = profileService.updateProfile(req.user.id, req.body, req.file);
+        const { user, requiresReauth } = await profileService.updateProfile(req.user.id, req.body, req.file);
         res.json({ success: true, requiresReauth, avatar: user.avatar || null });
     } catch (err) {
         res.status(err.statusCode || 500).json({ success: false, message: err.message });

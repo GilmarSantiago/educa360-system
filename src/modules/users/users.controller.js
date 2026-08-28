@@ -1,50 +1,44 @@
-/**
- * USERS CONTROLLER
- * 
- * Maneja las peticiones HTTP para la gestión de usuarios.
- */
-
 const usersService = require('./users.service');
 
-const getAll = (req, res) => {
+const getAll = async (req, res) => {
     try {
-        const users = usersService.getAllUsers();
+        const users = await usersService.getAllUsers();
         res.json({ success: true, users });
     } catch (err) {
         res.status(err.statusCode || 500).json({ success: false, message: err.message });
     }
 };
 
-const getById = (req, res) => {
+const getById = async (req, res) => {
     try {
-        const user = usersService.getUserById(req.params.id);
+        const user = await usersService.getUserById(req.params.id);
         res.json({ success: true, user });
     } catch (err) {
         res.status(err.statusCode || 500).json({ success: false, message: err.message });
     }
 };
 
-const create = (req, res) => {
+const create = async (req, res) => {
     try {
-        const user = usersService.createUser(req.body);
+        const user = await usersService.createUser(req.body);
         res.status(201).json({ success: true, user });
     } catch (err) {
         res.status(err.statusCode || 500).json({ success: false, message: err.message });
     }
 };
 
-const update = (req, res) => {
+const update = async (req, res) => {
     try {
-        const user = usersService.updateUser(req.params.id, req.body);
+        const user = await usersService.updateUser(req.params.id, req.body);
         res.json({ success: true, user });
     } catch (err) {
         res.status(err.statusCode || 500).json({ success: false, message: err.message });
     }
 };
 
-const remove = (req, res) => {
+const remove = async (req, res) => {
     try {
-        usersService.deleteUser(req.params.id, req.user.id);
+        await usersService.deleteUser(req.params.id, req.user.id);
         res.json({ success: true, message: 'Usuario eliminado correctamente.' });
     } catch (err) {
         res.status(err.statusCode || 500).json({ success: false, message: err.message });

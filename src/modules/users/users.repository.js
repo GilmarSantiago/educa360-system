@@ -1,47 +1,58 @@
-/**
- * USERS REPOSITORY
- * 
- * Operaciones CRUD sobre la colección 'users' en localDb.
- * Al migrar a PostgreSQL, solo se reescribe este archivo.
- */
+const { query } = require('../../db');
 
-const { getConfig, saveConfig } = require('../../db/localDb');
-
-const findAll = () => {
-    const { users } = getConfig();
-    return users;
+const findAll = async () => {
+    const res = await query('SELECT * FROM users ORDER BY id ASC');
+    return res.rows;
 };
 
-const findById = (id) => {
-    const { users } = getConfig();
-    return users.find(u => u.id == id) || null;
+const findById = async (id) => {
+    const res = await query('SELECT * FROM users WHERE id = $1', [id]);
+    return res.rows[0] || null;
 };
 
-const create = (data) => {
-    const config = getConfig();
-    const maxId = config.users.reduce((max, u) => (u.id > max ? u.id : max), 0);
-    const newUser = { ...data, id: maxId + 1 };
-    config.users.push(newUser);
-    saveConfig(config);
-    return newUser;
+const findByUsername = async (username) => {
+    const res = await query('SELECT * FROM users WHERE username = $1', [username]);
+    return res.rows[0] || null;
 };
 
-const update = (id, data) => {
-    const config = getConfig();
-    const index = config.users.findIndex(u => u.id == id);
-    if (index === -1) return null;
-    config.users[index] = { ...config.users[index], ...data, id: Number(id) };
-    saveConfig(config);
-    return config.users[index];
+const create = async (data) => {
+    const res = await query(`
+        INSERT INTO users (username, password, role, name, email, phone, address, birthdate, avatar, "canGenerateTokens")
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        RETURNING *
+    `, [
+        data.username, data.password, data.role, data.name, data.email,
+        data.phone, data.address, data.birthdate, data.avatar, data.canGenerateTokens || false
+    ]);
+    return res.rows[0];
 };
 
-const remove = (id) => {
-    const config = getConfig();
-    const initialLength = config.users.length;
-    config.users = config.users.filter(u => u.id != id);
-    if (config.users.length === initialLength) return false;
-    saveConfig(config);
-    return true;
+const update = async (id, data) => {
+    // Dynamic update query builder
+    const fields = [];
+    const values = [];
+    let count = 1;
+
+    for (const [key, value] of Object.entries(data)) {
+        if (key !== 'id') {
+            fields.push(`"${key}" = $${count}`);
+            values.push(value);
+            count++;
+        }
+    }
+
+    if (fields.length === 0) return await findById(id);
+
+    values.push(id);
+    const sql = `UPDATE users SET ${fields.join(', ')} WHERE id = $${count} RETURNING *`;
+    
+    const res = await query(sql, values);
+    return res.rows[0] || null;
 };
 
-module.exports = { findAll, findById, create, update, remove };
+const remove = async (id) => {
+    const res = await query('DELETE FROM users WHERE id = $1 RETURNING id', [id]);
+    return res.rowCount > 0;
+};
+
+module.exports = { findAll, findById, findByUsername, create, update, remove };

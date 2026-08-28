@@ -1,41 +1,36 @@
-const { getConfig, saveConfig } = require('../../db/localDb');
+const { query } = require('../../db');
 
 const getAll = async () => {
-    const config = getConfig();
-    // Transformamos el objeto de roles en un array para el frontend
-    return Object.entries(config.roles).map(([id, data]) => ({
-        id,
-        ...data
+    const res = await query('SELECT * FROM roles ORDER BY name ASC');
+    return res.rows.map(row => ({
+        id: row.name,
+        modules: row.modules
     }));
 };
 
 const update = async (id, data) => {
-    const config = getConfig();
-    // Si el ID cambió (renombrar), manejamos la lógica
+    // If the ID (name) changed, we might need to handle renaming.
+    // In SQL, we can update the primary key if it cascades, but let's just do a DELETE/INSERT or UPDATE.
     if (data.newId && data.newId !== id) {
-        config.roles[data.newId] = config.roles[id] || { modules: [] };
-        if (config.roles[id]) delete config.roles[id];
+        await query('UPDATE roles SET name = $1 WHERE name = $2', [data.newId, id]);
         id = data.newId;
     }
 
-    if (!config.roles[id]) {
-        config.roles[id] = { modules: [] };
-    }
-    
-    if (data.modules) config.roles[id].modules = data.modules;
-    
-    saveConfig(config);
-    return { id, ...config.roles[id] };
+    // Upsert role modules
+    const modulesJson = JSON.stringify(data.modules || []);
+    const res = await query(`
+        INSERT INTO roles (name, modules) 
+        VALUES ($1, $2::jsonb)
+        ON CONFLICT (name) DO UPDATE SET modules = EXCLUDED.modules
+        RETURNING *
+    `, [id, modulesJson]);
+
+    return { id: res.rows[0].name, modules: res.rows[0].modules };
 };
 
 const remove = async (id) => {
-    const config = getConfig();
-    if (config.roles[id]) {
-        delete config.roles[id];
-        saveConfig(config);
-        return true;
-    }
-    return false;
+    const res = await query('DELETE FROM roles WHERE name = $1 RETURNING name', [id]);
+    return res.rowCount > 0;
 };
 
 module.exports = { getAll, update, remove };

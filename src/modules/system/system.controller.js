@@ -1,10 +1,14 @@
-const { getConfig } = require('../../db/localDb');
+const { query } = require('../../db');
 const systemService = require('./system.service');
 
 const getAllModules = async (req, res, next) => {
     try {
-        const config = getConfig();
-        res.json({ success: true, modules: config.modules });
+        const result = await query('SELECT * FROM modules');
+        const modulesMap = {};
+        for (const row of result.rows) {
+            modulesMap[row.name] = row;
+        }
+        res.json({ success: true, modules: modulesMap });
     } catch (err) { next(err); }
 };
 

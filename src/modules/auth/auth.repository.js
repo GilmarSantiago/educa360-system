@@ -1,22 +1,9 @@
-/**
- * AUTH REPOSITORY
- * 
- * Acceso a datos para autenticación.
- * Capa que interactúa directamente con localDb (hoy) o PostgreSQL (futuro).
- */
-
 const bcrypt = require('bcryptjs');
-const { getConfig } = require('../../db/localDb');
+const { query } = require('../../db');
 
-/**
- * Busca un usuario por username o email, y valida la contraseña.
- * @returns {Object|null} El usuario encontrado o null.
- */
-const findByCredentials = (usernameOrEmail, password) => {
-    const config = getConfig();
-    const user = config.users.find(
-        u => (u.username === usernameOrEmail || u.email === usernameOrEmail)
-    );
+const findByCredentials = async (usernameOrEmail, password) => {
+    const res = await query('SELECT * FROM users WHERE username = $1 OR email = $1', [usernameOrEmail]);
+    const user = res.rows[0];
 
     if (user && bcrypt.compareSync(password, user.password)) {
         if (user.status === 'bloqueado') {
@@ -28,17 +15,22 @@ const findByCredentials = (usernameOrEmail, password) => {
     return null;
 };
 
-/**
- * Obtiene los módulos asignados a un rol.
- * @param {string} role
- * @returns {Array} Lista de módulos con id, name, icon y category.
- */
-const getModulesForRole = (role) => {
-    const config = getConfig();
-    const roleData = config.roles[role] || { modules: [] };
-    return roleData.modules.map(modId => ({
+const getModulesForRole = async (roleName) => {
+    // We join roles and modules? No, modules are stored in a jsonb array.
+    const resRole = await query('SELECT modules FROM roles WHERE name = $1', [roleName]);
+    if (!resRole.rows[0]) return [];
+
+    const moduleIds = resRole.rows[0].modules || [];
+    
+    const modulesRes = await query('SELECT * FROM modules');
+    const modulesMap = {};
+    for (const m of modulesRes.rows) {
+        modulesMap[m.name] = m;
+    }
+
+    return moduleIds.map(modId => ({
         id: modId,
-        ...(config.modules[modId] || { name: modId, icon: 'fas fa-cube' }),
+        ...(modulesMap[modId] || { name: modId, icon: 'fas fa-cube' }),
     }));
 };
 

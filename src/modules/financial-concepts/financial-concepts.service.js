@@ -1,41 +1,23 @@
-const db = require('../../db/localDb');
+const BaseRepository = require('../../shared/BaseRepository');
+const repo = new BaseRepository('financialConcepts');
 
 const getConcepts = async () => {
-    const data = db.getConfig();
-    return data.financialConcepts || [];
+    return await repo.findAll();
 };
 
 const createConcept = async (conceptData) => {
-    const data = db.getConfig();
-    if (!data.financialConcepts) data.financialConcepts = [];
-    
-    const newConcept = {
-        id: Date.now(),
-        ...conceptData
-    };
-    
-    data.financialConcepts.push(newConcept);
-    db.saveConfig(data);
-    return newConcept;
+    return await repo.create(conceptData);
 };
 
 const updateConcept = async (id, conceptData) => {
-    const data = db.getConfig();
-    const index = (data.financialConcepts || []).findIndex(c => c.id == id);
-    if (index === -1) throw new Error('Concepto financiero no encontrado');
-    
-    data.financialConcepts[index] = { ...data.financialConcepts[index], ...conceptData };
-    db.saveConfig(data);
-    return data.financialConcepts[index];
+    const updated = await repo.update(id, conceptData);
+    if (!updated) throw new Error('Concepto financiero no encontrado');
+    return updated;
 };
 
 const deleteConcept = async (id) => {
-    const data = db.getConfig();
-    const index = (data.financialConcepts || []).findIndex(c => c.id == id);
-    if (index === -1) throw new Error('Concepto financiero no encontrado');
-    
-    data.financialConcepts.splice(index, 1);
-    db.saveConfig(data);
+    const deleted = await repo.remove(id);
+    if (!deleted) throw new Error('Concepto financiero no encontrado');
     return true;
 };
 

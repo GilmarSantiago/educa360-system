@@ -6,18 +6,18 @@
 
 const schoolService = require('./school.service');
 
-const getSchool = (req, res) => {
+const getSchool = async (req, res) => {
     try {
-        const school = schoolService.getSchool();
+        const school = await schoolService.getSchool();
         res.json({ success: true, school });
     } catch (err) {
         res.status(err.statusCode || 500).json({ success: false, message: err.message });
     }
 };
 
-const updateSchool = (req, res) => {
+const updateSchool = async (req, res) => {
     try {
-        const school = schoolService.updateSchool(req.body, req.file);
+        const school = await schoolService.updateSchool(req.body, req.file);
         res.json({ success: true, school });
     } catch (err) {
         res.status(err.statusCode || 500).json({ success: false, message: err.message });

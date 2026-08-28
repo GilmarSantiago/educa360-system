@@ -1,41 +1,9 @@
-const { getConfig, saveConfig } = require('../../db/localDb');
+const BaseRepository = require('../../shared/BaseRepository');
 
-const getAll = () => {
-    const config = getConfig();
-    return config.courses || [];
-};
+class Repository extends BaseRepository {
+    constructor() {
+        super('courses');
+    }
+}
 
-const getById = (id) => {
-    const courses = getAll();
-    return courses.find(c => c.id == id);
-};
-
-const create = (data) => {
-    const config = getConfig();
-    const newCourse = {
-        id: Date.now(),
-        ...data
-    };
-    if (!config.courses) config.courses = [];
-    config.courses.push(newCourse);
-    saveConfig(config);
-    return newCourse;
-};
-
-const update = (id, data) => {
-    const config = getConfig();
-    const index = config.courses.findIndex(c => c.id == id);
-    if (index === -1) throw new Error('Curso no encontrado');
-    
-    config.courses[index] = { ...config.courses[index], ...data };
-    saveConfig(config);
-    return config.courses[index];
-};
-
-const remove = (id) => {
-    const config = getConfig();
-    config.courses = config.courses.filter(c => c.id != id);
-    saveConfig(config);
-};
-
-module.exports = { getAll, getById, create, update, remove };
+module.exports = new Repository();
