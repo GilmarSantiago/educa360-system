@@ -1,0 +1,1034 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "username": "admin",
+            "password": "$2b$10$6NvtK4G3ZXF3xTxocOJEweDjSiRYykkFjVsmCMbthtcxxIUbsk1K2",
+            "role": "administrador",
+            "name": "Admin Educa360",
+            "email": "admin@educa360.com",
+            "phone": "123456789",
+            "address": "Sede Central",
+            "birthdate": "1980-01-01",
+            "avatar": "/uploads/avatars/user-1-1778371163831-748340741.jpeg",
+            "canGenerateTokens": true
+        },
+        {
+            "id": 2,
+            "username": "soporte",
+            "password": "$2b$10$NZR6ByNmD/0MFf125idA0OYrD29YS.CXrMMYhFs3grLVMhThLgfKW",
+            "role": "soporte",
+            "name": "Soporte Técnico",
+            "email": "soporte@educa360.com",
+            "phone": "987654321",
+            "address": "",
+            "birthdate": "1990-05-15"
+        },
+        {
+            "id": 3,
+            "username": "profe",
+            "password": "$2b$10$oN/o2.PS67PLsCv.CQWZpOCSISdXtDOm2g00N4ymdp6R28ou883Pa",
+            "role": "maestro",
+            "name": "Juan Perez",
+            "email": "juan@educa360.com",
+            "phone": "555123456",
+            "address": "Av. Maestros 123",
+            "birthdate": "1985-08-20"
+        },
+        {
+            "id": 4,
+            "username": "colab",
+            "password": "$2b$10$Y2vHBlBGKglEmcg7BAH9iOrPTu2r.B639R9eCuMG.s07rErus9AZO",
+            "role": "colaborador",
+            "name": "Luis Torres",
+            "email": "luis@educa360.com",
+            "phone": "",
+            "address": "",
+            "birthdate": ""
+        },
+        {
+            "id": 1780021445157,
+            "username": "75371194",
+            "password": "$2b$10$B/aAllLjlAUQWQBcKiMTbu87DWIP0k8k0lmZ9aImTpVVBTR2PQswO",
+            "role": "apoderado",
+            "name": "Gilmar Vega Torres",
+            "email": "gilmar.30.18@gmail.com",
+            "phone": "950548926",
+            "address": "",
+            "status": "activo"
+        }
+    ],
+    "roles": {
+        "administrador": {
+            "modules": [
+                "home",
+                "school",
+                "enrollments",
+                "reports",
+                "caja",
+                "settings",
+                "reporte_cajas",
+                "academic_records"
+            ]
+        },
+        "soporte": {
+            "modules": [
+                "home",
+                "tickets",
+                "logs",
+                "db"
+            ]
+        },
+        "maestro": {
+            "modules": [
+                "home",
+                "classes",
+                "grades",
+                "attendance",
+                "messages"
+            ]
+        },
+        "apoderado": {
+            "modules": [
+                "home",
+                "student_progress",
+                "bills",
+                "news"
+            ]
+        },
+        "colaborador": {
+            "modules": [
+                "home",
+                "enrollments",
+                "tasks",
+                "calendar",
+                "caja"
+            ]
+        }
+    },
+    "modules": {
+        "home": {
+            "name": "Dashboard",
+            "icon": "fas fa-tachometer-alt"
+        },
+        "school": {
+            "name": "Institución",
+            "icon": "fas fa-school",
+            "category": "Académicas"
+        },
+        "enrollments": {
+            "name": "Inscripciones",
+            "icon": "fas fa-user-plus",
+            "category": "Académicas"
+        },
+        "reports": {
+            "name": "Reportes",
+            "icon": "fas fa-chart-line",
+            "category": "Financieras"
+        },
+        "caja": {
+            "name": "Caja",
+            "icon": "fas fa-cash-register",
+            "category": "Financieras"
+        },
+        "settings": {
+            "name": "Configuración",
+            "icon": "fas fa-cog",
+            "category": "Sistema"
+        },
+        "tickets": {
+            "name": "Tickets",
+            "icon": "fas fa-ticket-alt",
+            "category": "Administrativas"
+        },
+        "logs": {
+            "name": "Logs del Sistema",
+            "icon": "fas fa-terminal",
+            "category": "Administrativas"
+        },
+        "db": {
+            "name": "Base de Datos",
+            "icon": "fas fa-database",
+            "category": "Administrativas"
+        },
+        "classes": {
+            "name": "Mis Clases",
+            "icon": "fas fa-chalkboard-teacher",
+            "category": "Académicas"
+        },
+        "grades": {
+            "name": "Calificaciones",
+            "icon": "fas fa-graduation-cap",
+            "category": "Académicas"
+        },
+        "attendance": {
+            "name": "Asistencia",
+            "icon": "fas fa-clipboard-check",
+            "category": "Académicas"
+        },
+        "messages": {
+            "name": "Mensajes",
+            "icon": "fas fa-envelope",
+            "category": "Administrativas"
+        },
+        "student_progress": {
+            "name": "Progreso Hijo",
+            "icon": "fas fa-child",
+            "category": "Académicas"
+        },
+        "bills": {
+            "name": "Boletas",
+            "icon": "fas fa-file-invoice",
+            "category": "Financieras"
+        },
+        "news": {
+            "name": "Comunicados",
+            "icon": "fas fa-bullhorn",
+            "category": "Administrativas"
+        },
+        "tasks": {
+            "name": "Tareas",
+            "icon": "fas fa-tasks",
+            "category": "Académicas"
+        },
+        "calendar": {
+            "name": "Calendario",
+            "icon": "fas fa-calendar-alt",
+            "category": "Académicas"
+        },
+        "reporte_cajas": {
+            "name": "Reportes de Caja",
+            "icon": "fas fa-file-invoice-dollar",
+            "category": "Financieras"
+        },
+        "academic_records": {
+            "name": "Directorio Académico",
+            "icon": "fas fa-address-book",
+            "category": "Académicas"
+        }
+    },
+    "school": {
+        "name": "Avanza College",
+        "email": "contacto@educa360.com",
+        "phone": "012345678",
+        "address": "Av. Principal 123",
+        "logo": "/uploads/school/logo-1778725963405-987194893.jpg",
+        "paymentMethods": [
+            "Efectivo",
+            "Yape / Plin",
+            "Transferencia",
+            "Tarjeta"
+        ],
+        "allowMultipleCashSessions": false
+    },
+    "cashSessions": [
+        {
+            "id": "1780029604796",
+            "userId": 5,
+            "openedAt": "2026-05-29T04:40:04.796Z",
+            "closedAt": "2026-06-06T18:35:43.295Z",
+            "initialAmount": 400,
+            "finalAmount": null,
+            "systemCalculatedAmount": null,
+            "status": "closed",
+            "closedBy": 1,
+            "finalAmounts": {
+                "Efectivo": 1150,
+                "Yape / Plin": 0,
+                "Transferencia": 1500,
+                "Tarjeta": 0
+            },
+            "systemCalculatedAmounts": {
+                "Efectivo": 1150,
+                "Yape / Plin": 0,
+                "Transferencia": 1500,
+                "Tarjeta": 0
+            },
+            "differences": {
+                "Efectivo": 0,
+                "Yape / Plin": 0,
+                "Transferencia": 0,
+                "Tarjeta": 0
+            },
+            "totalDifference": 0
+        }
+    ],
+    "academicYears": [
+        {
+            "id": 1,
+            "name": "2026",
+            "startDate": "2026-03-01",
+            "endDate": "2026-12-31",
+            "isActive": false,
+            "periods": [
+                {
+                    "id": 1,
+                    "name": "1° Bimestre",
+                    "startDate": "2026-03-01",
+                    "endDate": "2026-04-01"
+                },
+                {
+                    "id": 2,
+                    "name": "2° Bimestre",
+                    "startDate": "2026-05-02",
+                    "endDate": "2026-07-01"
+                },
+                {
+                    "id": 3,
+                    "name": "3° Bimestre",
+                    "startDate": "2026-07-02",
+                    "endDate": "2026-09-01"
+                },
+                {
+                    "id": 4,
+                    "name": "4° Bimestre",
+                    "startDate": "2026-10-02",
+                    "endDate": "2026-12-31"
+                }
+            ],
+            "periodicity": "bimestral",
+            "staffStartDate": "2026-03-01",
+            "workingDays": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "holidays": []
+        },
+        {
+            "name": "2027",
+            "startDate": "2027-03-01",
+            "endDate": "2027-12-24",
+            "staffStartDate": "2027-03-01",
+            "workingDays": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "holidays": [],
+            "periodicity": "bimestral",
+            "isActive": true,
+            "periods": [
+                {
+                    "id": 1,
+                    "name": "1° Bimestre",
+                    "startDate": "2027-03-01",
+                    "endDate": "2027-04-01"
+                },
+                {
+                    "id": 2,
+                    "name": "2° Bimestre",
+                    "startDate": "2027-05-02",
+                    "endDate": "2027-07-01"
+                },
+                {
+                    "id": 3,
+                    "name": "3° Bimestre",
+                    "startDate": "2027-07-02",
+                    "endDate": "2027-09-01"
+                },
+                {
+                    "id": 4,
+                    "name": "4° Bimestre",
+                    "startDate": "2027-10-02",
+                    "endDate": "2027-12-24"
+                }
+            ],
+            "id": 2
+        }
+    ],
+    "gradeScales": [
+        {
+            "id": 1,
+            "name": "Escala Numérica (0-20)",
+            "type": "numeric",
+            "min": 0,
+            "max": 20,
+            "passingGrade": 11,
+            "isDefault": true
+        }
+    ],
+    "grades": [
+        {
+            "id": 1,
+            "name": "3 Años",
+            "level": "inicial",
+            "order": 1,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 2,
+            "name": "4 Años",
+            "level": "inicial",
+            "order": 2,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 3,
+            "name": "5 Años",
+            "level": "inicial",
+            "order": 3,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 4,
+            "name": "1ro Primaria",
+            "level": "primaria",
+            "order": 1,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 5,
+            "name": "2do Primaria",
+            "level": "primaria",
+            "order": 2,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 6,
+            "name": "3ro Primaria",
+            "level": "primaria",
+            "order": 3,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 7,
+            "name": "4to Primaria",
+            "level": "primaria",
+            "order": 4,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 8,
+            "name": "5to Primaria",
+            "level": "primaria",
+            "order": 5,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 9,
+            "name": "6to Primaria",
+            "level": "primaria",
+            "order": 6,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 10,
+            "name": "1ro Secundaria",
+            "level": "secundaria",
+            "order": 1,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 11,
+            "name": "2do Secundaria",
+            "level": "secundaria",
+            "order": 2,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 12,
+            "name": "3ro Secundaria",
+            "level": "secundaria",
+            "order": 3,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 13,
+            "name": "4to Secundaria",
+            "level": "secundaria",
+            "order": 4,
+            "sections": [
+                "A",
+                "B"
+            ]
+        },
+        {
+            "id": 14,
+            "name": "5to Secundaria",
+            "level": "secundaria",
+            "order": 5,
+            "sections": [
+                "A",
+                "B",
+                "C"
+            ]
+        }
+    ],
+    "courses": [
+        {
+            "id": 1,
+            "name": "Matemáticas",
+            "code": "MAT",
+            "gradeId": null,
+            "hoursPerWeek": 5
+        },
+        {
+            "id": 2,
+            "name": "Comunicación",
+            "code": "COM",
+            "gradeId": null,
+            "hoursPerWeek": 5
+        },
+        {
+            "id": 3,
+            "name": "Ciencias",
+            "code": "CIE",
+            "gradeId": null,
+            "hoursPerWeek": 4
+        },
+        {
+            "id": 4,
+            "name": "Historia",
+            "code": "HIS",
+            "gradeId": null,
+            "hoursPerWeek": 3
+        }
+    ],
+    "schedules": [],
+    "students": [
+        {
+            "id": 1780030716685,
+            "name": "Pepito Torres",
+            "document": "12345678",
+            "birthdate": "2020-08-19",
+            "parentId": 1780021445157,
+            "isNew": true,
+            "previousSchool": "Interno"
+        },
+        {
+            "id": 1780085621846,
+            "name": "Angelica Vega",
+            "document": "95624815",
+            "birthdate": "2020-08-12",
+            "parentId": 1780021445157,
+            "isNew": true,
+            "previousSchool": "Interno"
+        },
+        {
+            "id": 1780116279821,
+            "name": "Alumno Prueba",
+            "document": "84596231",
+            "birthdate": "2019-11-28",
+            "parentId": 1780021445157,
+            "isNew": true,
+            "previousSchool": "I.E.P. La Encantada de Villa"
+        }
+    ],
+    "parents": [],
+    "enrollments": [
+        {
+            "id": 1780030716686,
+            "studentId": 1780030716685,
+            "gradeId": "7",
+            "section": "A",
+            "academicYearId": "2",
+            "academicYearName": "2027",
+            "status": "activo",
+            "date": "2026-05-29T04:58:36.684Z"
+        },
+        {
+            "id": 1780085621847,
+            "studentId": 1780085621846,
+            "gradeId": "7",
+            "section": "A",
+            "academicYearId": "2",
+            "academicYearName": "2027",
+            "status": "activo",
+            "date": "2026-05-29T20:13:41.845Z"
+        },
+        {
+            "id": 1780116279822,
+            "studentId": 1780116279821,
+            "gradeId": "9",
+            "section": "A",
+            "academicYearId": "2",
+            "academicYearName": "2027",
+            "status": "activo",
+            "date": "2026-05-30T04:44:39.820Z"
+        }
+    ],
+    "payments": [
+        {
+            "id": 1780030716784,
+            "studentId": 1780030716685,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780030716686,
+            "conceptId": 1,
+            "concept": "Cuota de Ingreso",
+            "amount": 500,
+            "status": "pagado",
+            "method": "Efectivo",
+            "paymentDate": "2026-05-29T04:58:36.684Z",
+            "dueDate": null,
+            "createdAt": "2026-05-29T04:58:36.684Z",
+            "cashSessionId": "1780029604796"
+        },
+        {
+            "id": 1780030716785,
+            "studentId": 1780030716685,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780030716686,
+            "conceptId": 2,
+            "concept": "Matrícula",
+            "amount": 250,
+            "status": "pagado",
+            "method": "Efectivo",
+            "paymentDate": "2026-05-29T04:58:36.684Z",
+            "dueDate": null,
+            "createdAt": "2026-05-29T04:58:36.684Z",
+            "cashSessionId": "1780029604796"
+        },
+        {
+            "id": 1780030716813,
+            "studentId": 1780030716685,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780030716686,
+            "conceptId": 3,
+            "concept": "Mensualidad - Julio 2027",
+            "amount": 111.36,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-07-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T04:58:36.708Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780030716816,
+            "studentId": 1780030716685,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780030716686,
+            "conceptId": 3,
+            "concept": "Mensualidad - Agosto 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-08-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T04:58:36.708Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780030716818,
+            "studentId": 1780030716685,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780030716686,
+            "conceptId": 3,
+            "concept": "Mensualidad - Septiembre 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-09-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T04:58:36.708Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780030716820,
+            "studentId": 1780030716685,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780030716686,
+            "conceptId": 3,
+            "concept": "Mensualidad - Octubre 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-10-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T04:58:36.708Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780030716822,
+            "studentId": 1780030716685,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780030716686,
+            "conceptId": 3,
+            "concept": "Mensualidad - Noviembre 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-11-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T04:58:36.708Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780030716824,
+            "studentId": 1780030716685,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780030716686,
+            "conceptId": 3,
+            "concept": "Mensualidad - Diciembre 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-12-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T04:58:36.708Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780085621953,
+            "studentId": 1780085621846,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780085621847,
+            "conceptId": 1,
+            "concept": "Cuota de Ingreso",
+            "amount": 500,
+            "status": "pagado",
+            "method": "Transferencia",
+            "paymentDate": "2026-05-29T20:13:41.845Z",
+            "dueDate": null,
+            "createdAt": "2026-05-29T20:13:41.845Z",
+            "cashSessionId": "1780029604796"
+        },
+        {
+            "id": 1780085621954,
+            "studentId": 1780085621846,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780085621847,
+            "conceptId": 2,
+            "concept": "Matrícula",
+            "amount": 250,
+            "status": "pagado",
+            "method": "Transferencia",
+            "paymentDate": "2026-05-29T20:13:41.845Z",
+            "dueDate": null,
+            "createdAt": "2026-05-29T20:13:41.845Z",
+            "cashSessionId": "1780029604796"
+        },
+        {
+            "id": 1780085622026,
+            "studentId": 1780085621846,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780085621847,
+            "conceptId": 3,
+            "concept": "Mensualidad - Marzo 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-03-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T20:13:41.916Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780085622029,
+            "studentId": 1780085621846,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780085621847,
+            "conceptId": 3,
+            "concept": "Mensualidad - Abril 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-04-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T20:13:41.917Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780085622031,
+            "studentId": 1780085621846,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780085621847,
+            "conceptId": 3,
+            "concept": "Mensualidad - Mayo 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-05-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T20:13:41.917Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780085622033,
+            "studentId": 1780085621846,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780085621847,
+            "conceptId": 3,
+            "concept": "Mensualidad - Junio 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-06-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T20:13:41.917Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780085622035,
+            "studentId": 1780085621846,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780085621847,
+            "conceptId": 3,
+            "concept": "Mensualidad - Julio 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-07-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T20:13:41.917Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780085622037,
+            "studentId": 1780085621846,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780085621847,
+            "conceptId": 3,
+            "concept": "Mensualidad - Agosto 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-08-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T20:13:41.917Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780085622040,
+            "studentId": 1780085621846,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780085621847,
+            "conceptId": 3,
+            "concept": "Mensualidad - Septiembre 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-09-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T20:13:41.918Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780085622042,
+            "studentId": 1780085621846,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780085621847,
+            "conceptId": 3,
+            "concept": "Mensualidad - Octubre 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-10-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T20:13:41.918Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780085622044,
+            "studentId": 1780085621846,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780085621847,
+            "conceptId": 3,
+            "concept": "Mensualidad - Noviembre 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-11-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T20:13:41.918Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780085622046,
+            "studentId": 1780085621846,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780085621847,
+            "conceptId": 3,
+            "concept": "Mensualidad - Diciembre 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-12-05T17:00:00.000Z",
+            "createdAt": "2026-05-29T20:13:41.918Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780116279940,
+            "studentId": 1780116279821,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780116279822,
+            "conceptId": 1,
+            "concept": "Cuota de Ingreso",
+            "amount": 500,
+            "status": "pagado",
+            "method": "Transferencia",
+            "paymentDate": "2026-05-30T04:44:39.820Z",
+            "dueDate": null,
+            "createdAt": "2026-05-30T04:44:39.820Z",
+            "cashSessionId": "1780029604796"
+        },
+        {
+            "id": 1780116279941,
+            "studentId": 1780116279821,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780116279822,
+            "conceptId": 2,
+            "concept": "Matrícula",
+            "amount": 250,
+            "status": "pagado",
+            "method": "Transferencia",
+            "paymentDate": "2026-05-30T04:44:39.820Z",
+            "dueDate": null,
+            "createdAt": "2026-05-30T04:44:39.820Z",
+            "cashSessionId": "1780029604796"
+        },
+        {
+            "id": 1780116280059,
+            "studentId": 1780116279821,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780116279822,
+            "conceptId": 3,
+            "concept": "Mensualidad - Agosto 2027",
+            "amount": 127.27,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-08-05T17:00:00.000Z",
+            "createdAt": "2026-05-30T04:44:39.932Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780116280062,
+            "studentId": 1780116279821,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780116279822,
+            "conceptId": 3,
+            "concept": "Mensualidad - Septiembre 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-09-05T17:00:00.000Z",
+            "createdAt": "2026-05-30T04:44:39.933Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780116280064,
+            "studentId": 1780116279821,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780116279822,
+            "conceptId": 3,
+            "concept": "Mensualidad - Octubre 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-10-05T17:00:00.000Z",
+            "createdAt": "2026-05-30T04:44:39.933Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780116280066,
+            "studentId": 1780116279821,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780116279822,
+            "conceptId": 3,
+            "concept": "Mensualidad - Noviembre 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-11-05T17:00:00.000Z",
+            "createdAt": "2026-05-30T04:44:39.933Z",
+            "cashSessionId": null
+        },
+        {
+            "id": 1780116280068,
+            "studentId": 1780116279821,
+            "parentId": 1780021445157,
+            "enrollmentId": 1780116279822,
+            "conceptId": 3,
+            "concept": "Mensualidad - Diciembre 2027",
+            "amount": 350,
+            "status": "pendiente",
+            "method": "",
+            "paymentDate": null,
+            "dueDate": "2027-12-05T17:00:00.000Z",
+            "createdAt": "2026-05-30T04:44:39.933Z",
+            "cashSessionId": null
+        }
+    ],
+    "financialConcepts": [
+        {
+            "id": 1,
+            "name": "Cuota de Ingreso",
+            "type": "enrollment_fee",
+            "defaultAmount": 500,
+            "isMandatory": true,
+            "appliesToNew": true,
+            "appliesToRegular": false,
+            "installmentsCount": 1,
+            "periodicity": "once"
+        },
+        {
+            "id": 2,
+            "name": "Matrícula",
+            "type": "tuition",
+            "defaultAmount": 250,
+            "isMandatory": true,
+            "appliesToNew": true,
+            "appliesToRegular": true,
+            "installmentsCount": 1,
+            "periodicity": "once"
+        },
+        {
+            "id": 3,
+            "name": "Mensualidad",
+            "type": "monthly",
+            "defaultAmount": 350,
+            "isMandatory": true,
+            "appliesToNew": true,
+            "appliesToRegular": true,
+            "installmentsCount": 10,
+            "periodicity": "monthly"
+        }
+    ],
+    "closureTokens": []
+}

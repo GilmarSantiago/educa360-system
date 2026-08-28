@@ -1,0 +1,127 @@
+:root {
+    /* Primary Colors - Deep & Elegant */
+    --primary-color: #2fbf71; /* Brand Principal (verde) */
+    --primary-hover: #26995b;
+    --primary-accent: #223a5e; /* Brand Secundario (azul oscuro) */
+    --primary-accent-hover: #1c2f4c;
+    --primary-light: #e6f9ef; /* Lighter shade of secondary */
+    
+    /* Secondary/Neutral */
+    --secondary-color: #64748b;
+    --accent-color: #2fbf71;
+    
+    /* Glassmorphism Defaults */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    
+    /* Shadows - Standardized */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    
+    /* Semantic Colors */
+    --success: #2fbf71;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --info: #4c6ef5; /* Un azul más elegante que combine con el verde */
+
+    /* Surface & Text */
+    --bg-body: #f8fafc;
+    --bg-main: #ffffff;
+    --bg-card: #ffffff;
+    --sidebar-bg: #ffffff;
+    --border-color: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --text-light: #f8fafc;
+    
+    /* Layout & Radii - Elegant Standard */
+    --sidebar-width: 280px;
+    --navbar-height: 72px;
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+    --radius-pill: 50px; /* Kept for legacy pill buttons only */
+    
+    /* Transitions */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base resets and elegant utilities */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-size: 14px; /* Base moderada */
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1 { font-size: 1.8rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.3rem; }
+h4 { font-size: 1.1rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.85rem; }
+
+.small, small { font-size: 0.8rem; }
+.x-small { font-size: 0.7rem; }
+
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+.elegant-shadow {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
+.btn-elegant {
+    padding: 10px 24px;
+    border-radius: var(--border-radius-md);
+    font-weight: 600;
+    transition: var(--transition-smooth);
+    border: none;
+}
+
+.btn-elegant:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Bootstrap Overrides for Homogeneity */
+.text-primary { color: var(--primary-color) !important; }
+.bg-primary { background-color: var(--primary-color) !important; }
+.btn-primary { 
+    background-color: var(--primary-color) !important; 
+    border-color: var(--primary-color) !important; 
+    color: white !important;
+}
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+.btn-outline-primary {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+.btn-outline-primary:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+.border-primary { border-color: var(--primary-color) !important; }
+.badge.bg-primary { background-color: var(--primary-color) !important; color: white !important; }
+
+/* Custom Utilities */
+.text-brand-dark { color: var(--primary-accent) !important; }
+.bg-brand-dark { background-color: var(--primary-accent) !important; }
