@@ -1,4 +1,3 @@
-// @ts-expect-error - pg types are handled dynamically
 import pg from 'pg';
 
 const { Pool } = pg;
