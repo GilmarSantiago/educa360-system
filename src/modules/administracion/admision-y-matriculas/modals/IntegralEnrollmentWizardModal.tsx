@@ -805,12 +805,13 @@ export default function IntegralEnrollmentWizardModal({
         title: '¡Matrícula Emitida con Éxito!',
         message: `Se confirmó la matrícula ${data.enrollmentCode} y se generaron sus 10 pensiones en Finanzas.`,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
+      const msg = err instanceof Error ? err.message : 'Ocurrió un error inesperado en el servidor.';
       onNotify({
         type: 'error',
         title: 'No se pudo completar la matrícula',
-        message: err.message || 'Ocurrió un error inesperado en el servidor.',
+        message: msg,
       });
     } finally {
       setSubmitting(false);

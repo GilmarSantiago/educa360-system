@@ -258,8 +258,9 @@ export default function InstitutionManager({ onNotify, currentUser }: Institutio
 
       setConceptModalOpen(false);
       fetchFeeConcepts();
-    } catch (err: any) {
-      onNotify({ type: 'error', title: 'Error', message: err.message || 'Error al procesar concepto' });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al procesar concepto';
+      onNotify({ type: 'error', title: 'Error', message: msg });
     } finally {
       setSavingConcept(false);
     }
@@ -285,8 +286,9 @@ export default function InstitutionManager({ onNotify, currentUser }: Institutio
         message: data.message || 'Operación completada.',
       });
       fetchFeeConcepts();
-    } catch (err: any) {
-      onNotify({ type: 'error', title: 'Error', message: err.message || 'Error al eliminar' });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al eliminar';
+      onNotify({ type: 'error', title: 'Error', message: msg });
     }
   };
 

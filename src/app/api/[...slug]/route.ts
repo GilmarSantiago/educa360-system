@@ -17,8 +17,9 @@ import { serviciosYPrestamosRoutes } from '@/modules/financiero/servicios-y-pres
 import { arqueoDeCajaDiariaRoutes } from '@/modules/financiero/arqueo-de-caja-diaria/routes/arqueo-de-caja-diaria.routes';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+type RouteHandler = (req: NextRequest, context?: unknown) => Promise<Response> | Response;
 
-const MODULE_ROUTE_REGISTRY: Record<string, Record<string, any>> = {
+const MODULE_ROUTE_REGISTRY: Record<string, Partial<Record<HttpMethod, RouteHandler>>> = {
   ...authRoutes,
   ...saasRoutes,
   ...datosYReglasRoutes,
@@ -44,7 +45,7 @@ async function dispatch(
 
   // Caso especial de ruta dinámica: /api/admin/fee-concepts/:id
   if (slug.length === 3 && slug[0] === 'admin' && slug[1] === 'fee-concepts') {
-    const handler = (datosYReglasDynamicRoutes.feeConceptById as Record<string, any>)[method];
+    const handler = (datosYReglasDynamicRoutes.feeConceptById as Partial<Record<HttpMethod, RouteHandler>>)[method];
     if (typeof handler === 'function') {
       return handler(req, { params: Promise.resolve({ id: slug[2] }) });
     }

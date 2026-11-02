@@ -79,7 +79,7 @@ export async function PUT(
       message: 'Concepto actualizado correctamente',
       concept: res.rows[0],
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error al actualizar concepto de pago:', err);
     return NextResponse.json({ success: false, message: 'Error interno al actualizar' }, { status: 500 });
   }
@@ -133,7 +133,7 @@ export async function DELETE(
       success: true,
       message: 'Concepto de pago eliminado exitosamente',
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error al eliminar concepto de pago:', err);
     return NextResponse.json({ success: false, message: 'Error al eliminar concepto' }, { status: 500 });
   }

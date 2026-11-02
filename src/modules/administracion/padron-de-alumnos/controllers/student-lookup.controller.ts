@@ -190,7 +190,7 @@ export async function GET(req: NextRequest) {
       canEnroll: true,
       message: `Estudiante continuador. Cursó ${latestEnrollment.grade_name} (${latestEnrollment.year_name}). Condición detectada: ALUMNO REGULAR (Antiguo). Exonerado de Cuota de Ingreso.`,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error en student lookup:', err);
     return NextResponse.json({ success: false, message: 'Error interno en la búsqueda de estudiante' }, { status: 500 });
   }

@@ -112,7 +112,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, concepts: res.rows });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error al obtener conceptos de pago:', err);
     return NextResponse.json({ success: false, message: 'Error interno del servidor' }, { status: 500 });
   }
@@ -198,8 +198,8 @@ export async function POST(req: NextRequest) {
       message: 'Concepto de pago creado exitosamente',
       concept: insertRes.rows[0],
     });
-  } catch (err: any) {
-    if (err.code === '23505') {
+  } catch (err: unknown) {
+    if (typeof err === 'object' && err !== null && 'code' in err && (err as { code?: string }).code === '23505') {
       return NextResponse.json({ success: false, message: 'Ya existe un concepto de pago con ese código en el colegio' }, { status: 400 });
     }
     console.error('Error al crear concepto de pago:', err);

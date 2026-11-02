@@ -34,7 +34,7 @@ export default function IdleSessionWatcher({
   const [remainingSeconds, setRemainingSeconds] = useState(warningSeconds);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const lastActivityRef = useRef<number>(Date.now());
+  const lastActivityRef = useRef<number>(0);
   const isWarningOpenRef = useRef<boolean>(false);
   const isExecutingLogoutRef = useRef<boolean>(false);
 
