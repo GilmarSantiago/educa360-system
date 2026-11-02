@@ -2,15 +2,14 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Sidebar from '@/components/Sidebar';
-import ProfileModal from '@/components/ProfileModal';
-import AlertToast, { AlertNotification, AlertType } from '@/components/ui/AlertToast';
-import UsersManager from '@/components/admin/UsersManager';
-import TenantsManager from '@/components/admin/TenantsManager';
-import FinancesManager from '@/components/admin/FinancesManager';
-import AdministrationManager from '@/components/admin/AdministrationManager';
-import InstitutionManager from '@/components/admin/InstitutionManager';
-import IdleSessionWatcher from '@/components/IdleSessionWatcher';
+import Sidebar from '@/shared/layout/Sidebar';
+import AlertToast, { AlertNotification, AlertType } from '@/shared/ui/AlertToast';
+import { UsersManager, ProfileModal } from '@/modules/users';
+import { TenantsManager } from '@/modules/saas';
+import { FinancesManager } from '@/modules/finances';
+import { AdministrationManager } from '@/modules/administration';
+import { InstitutionManager } from '@/modules/institution';
+import { IdleSessionWatcher } from '@/modules/auth';
 import { AuthUser } from '@/types';
 import {
   Building2,
