@@ -7,3 +7,4 @@ export { default as FamiliasYApoderadosView } from './familias-y-apoderados/view
 export { default as PadronDeAlumnosView } from './padron-de-alumnos/views/PadronDeAlumnosView';
 export { default as AdmisionYMatriculasView } from './admision-y-matriculas/views/AdmisionYMatriculasView';
 export { default as IntegralEnrollmentWizardModal } from './admision-y-matriculas/modals/IntegralEnrollmentWizardModal';
+

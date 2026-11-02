@@ -6,3 +6,4 @@ export { default as OfficialReceiptPrintModal } from './pensiones-y-moras/modals
 export { default as ProductosYUniformesView } from './productos-y-uniformes/views/ProductosYUniformesView';
 export { default as ServiciosYPrestamosView } from './servicios-y-prestamos/views/ServiciosYPrestamosView';
 export { default as ArqueoDeCajaDiariaView } from './arqueo-de-caja-diaria/views/ArqueoDeCajaDiariaView';
+
