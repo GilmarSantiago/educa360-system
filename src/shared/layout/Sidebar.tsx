@@ -224,7 +224,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, onOpenProfile }
 
   // Estado para controlar módulos abiertos / colapsados
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({
-    mod_admin_pillar: true,
+    mod_admin_pillar: false,
     mod_finance_pillar: false,
     mod_academic_pillar: false,
     mod_saas_pillar: true,
@@ -235,6 +235,10 @@ export default function Sidebar({ user, activeTab, setActiveTab, onOpenProfile }
 
   const handleLogout = async () => {
     try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('educa360_active_tab');
+        localStorage.removeItem(`educa360_tab_${user.role}`);
+      }
       await fetch('/api/auth/logout', { method: 'POST' });
       router.push('/');
       router.refresh();
@@ -292,6 +296,19 @@ export default function Sidebar({ user, activeTab, setActiveTab, onOpenProfile }
         }
       }
     }
+
+    // Si es un módulo directo sin submódulos (ej. 'overview' - Panel General), colapsar los pilares
+    setExpandedModules((prev) => {
+      const next = { ...prev };
+      for (const c of currentConfig.categories) {
+        for (const m of c.modules) {
+          if (m.submodules && m.submodules.length > 0) {
+            next[m.id] = false;
+          }
+        }
+      }
+      return next;
+    });
   }, [activeTab, currentConfig]);
 
   return (

@@ -20,6 +20,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [inputsReady, setInputsReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionNotice, setSessionNotice] = useState<{
@@ -28,7 +29,14 @@ export default function LoginPage() {
   } | null>(null);
 
   useEffect(() => {
+    setUsername('');
+    setPassword('');
     if (typeof window !== 'undefined') {
+      localStorage.removeItem('educa360_active_tab');
+      ['ADMINISTRADOR', 'SOPORTE', 'COLABORADOR', 'MAESTRO', 'APODERADO'].forEach((role) => {
+        localStorage.removeItem(`educa360_tab_${role}`);
+      });
+
       const params = new URLSearchParams(window.location.search);
       const reason = params.get('reason');
       if (reason === 'timeout') {
@@ -68,6 +76,8 @@ export default function LoginPage() {
         throw new Error(data.message || 'Credenciales inválidas');
       }
 
+      setUsername('');
+      setPassword('');
       router.push('/dashboard');
       router.refresh();
     } catch (err: unknown) {
@@ -197,7 +207,11 @@ export default function LoginPage() {
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} autoComplete="off" className="space-y-4">
+              {/* Campos señuelo ocultos para evitar que el navegador autocompolete credenciales al cerrar sesión */}
+              <input type="text" name="prevent_autofill_user" className="hidden" tabIndex={-1} autoComplete="username" />
+              <input type="password" name="prevent_autofill_pass" className="hidden" tabIndex={-1} autoComplete="current-password" />
+
               <div>
                 <label className="block text-[11px] font-bold text-[#223a5e] uppercase tracking-wider mb-1.5 pl-1">
                   Usuario o Correo
@@ -206,6 +220,10 @@ export default function LoginPage() {
                   <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
+                    name="educa360_login_user"
+                    autoComplete="off"
+                    readOnly={!inputsReady}
+                    onFocus={() => setInputsReady(true)}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Tu usuario asignado"
@@ -223,6 +241,10 @@ export default function LoginPage() {
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="password"
+                    name="educa360_login_pass"
+                    autoComplete="new-password"
+                    readOnly={!inputsReady}
+                    onFocus={() => setInputsReady(true)}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"

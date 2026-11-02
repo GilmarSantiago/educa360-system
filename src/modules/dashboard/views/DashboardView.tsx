@@ -81,19 +81,15 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('');
   const userRole = user?.role;
 
-  // Cambiar de pestaña y persistir en URL + localStorage
+  // Cambiar de pestaña y persistir en URL
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('educa360_active_tab', tab);
-      if (userRole) {
-        localStorage.setItem(`educa360_tab_${userRole}`, tab);
-      }
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.set('tab', tab);
       window.history.replaceState({}, '', currentUrl.toString());
     }
-  }, [userRole]);
+  }, []);
 
   // Notificaciones Toast / Alertas
   const [alerts, setAlerts] = useState<AlertNotification[]>([]);
@@ -128,33 +124,31 @@ export default function DashboardPage() {
 
         const defaultTabs: Record<string, string> = {
           SOPORTE: 'saas_roi',
-          ADMINISTRADOR: 'admin_rules',
+          ADMINISTRADOR: 'overview',
           COLABORADOR: 'colab_ops',
           MAESTRO: 'teach_classes',
           APODERADO: 'parent_student',
         };
 
-        // Recuperar módulo previo desde URL (?tab=...) o localStorage
-        let savedTab: string | null = null;
+        // Al iniciar sesión (/dashboard sin ?tab=...), siempre carga el Panel General por defecto.
+        // Solo si el usuario recarga la página (F5) manteniendo ?tab=... en la URL, se respeta esa pestaña.
+        let urlTab: string | null = null;
         if (typeof window !== 'undefined') {
+          localStorage.removeItem('educa360_active_tab');
+          localStorage.removeItem(`educa360_tab_${data.user.role}`);
           const params = new URLSearchParams(window.location.search);
-          savedTab =
-            params.get('tab') ||
-            localStorage.getItem(`educa360_tab_${data.user.role}`) ||
-            localStorage.getItem('educa360_active_tab');
+          urlTab = params.get('tab');
         }
 
         const validTabs = VALID_TABS_BY_ROLE[data.user.role] || [];
         const finalTab =
-          savedTab && validTabs.includes(savedTab)
-            ? savedTab
+          urlTab && validTabs.includes(urlTab)
+            ? urlTab
             : (defaultTabs[data.user.role] || 'overview');
 
         setActiveTab(finalTab);
 
         if (typeof window !== 'undefined') {
-          localStorage.setItem('educa360_active_tab', finalTab);
-          localStorage.setItem(`educa360_tab_${data.user.role}`, finalTab);
           const currentUrl = new URL(window.location.href);
           if (currentUrl.searchParams.get('tab') !== finalTab) {
             currentUrl.searchParams.set('tab', finalTab);
