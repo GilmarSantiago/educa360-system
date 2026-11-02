@@ -12,7 +12,7 @@ export async function PUT(
 
     const session = await verifyToken(token);
     if (!session || !session.tenantId) {
-      return NextResponse.json({ success: false, message: 'Sesi+¦n inv+ílida' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'SesiÃ³n invÃ¡lida' }, { status: 401 });
     }
 
     if (!['ADMINISTRADOR', 'SOPORTE'].includes(session.role)) {
@@ -95,7 +95,7 @@ export async function DELETE(
 
     const session = await verifyToken(token);
     if (!session || !session.tenantId) {
-      return NextResponse.json({ success: false, message: 'Sesi+¦n inv+ílida' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'SesiÃ³n invÃ¡lida' }, { status: 401 });
     }
 
     if (!['ADMINISTRADOR', 'SOPORTE'].includes(session.role)) {
@@ -116,7 +116,7 @@ export async function DELETE(
     }
 
     if (checkRes.rows[0].is_system_default) {
-      // Los conceptos del sistema no se borran f+¡sicamente, solo se desactivan si se desea
+      // Los conceptos del sistema no se borran fÃ­sicamente, solo se desactivan si se desea
       await query(
         `UPDATE v2.fee_concepts SET is_active = false, updated_at = NOW() WHERE id = $1 AND tenant_id = $2`,
         [id, tenantId]
