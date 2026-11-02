@@ -78,8 +78,7 @@ export default function LoginPage() {
 
       setUsername('');
       setPassword('');
-      router.push('/dashboard');
-      router.refresh();
+      window.location.replace('/dashboard');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error inesperado al conectar';
       setError(msg);

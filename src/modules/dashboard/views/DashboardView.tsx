@@ -78,7 +78,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
   const userRole = user?.role;
 
   // Cambiar de pestaña y persistir en URL
@@ -177,12 +177,12 @@ export default function DashboardPage() {
   }, []);
 
   const handleLogout = async () => {
+    setLoading(true);
+    setActiveTab('overview');
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
-      router.push('/');
-      router.refresh();
-    } catch {
-      router.push('/');
+    } finally {
+      window.location.replace('/');
     }
   };
 

@@ -240,10 +240,8 @@ export default function Sidebar({ user, activeTab, setActiveTab, onOpenProfile }
         localStorage.removeItem(`educa360_tab_${user.role}`);
       }
       await fetch('/api/auth/logout', { method: 'POST' });
-      router.push('/');
-      router.refresh();
-    } catch {
-      router.push('/');
+    } finally {
+      window.location.replace('/');
     }
   };
 
