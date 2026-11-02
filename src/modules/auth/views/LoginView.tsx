@@ -15,6 +15,7 @@ import {
   Clock,
 } from 'lucide-react';
 import loginBg from '../assets/login-bg.png';
+import { Educa360Logo } from '@/shared/ui/Educa360Logo';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -146,10 +147,12 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-none">
-              <span className="text-[#2fbf71]">Educa</span>
-              <span className="text-white">360</span>
-            </h1>
+            <Educa360Logo
+              variant="horizontal"
+              theme="mono-white"
+              className="h-14 sm:h-16 w-auto drop-shadow-md mb-2"
+              showTagline={false}
+            />
             <p className="mt-3 text-base sm:text-lg text-slate-200 font-medium max-w-lg leading-relaxed">
               La solución tecnológica integral diseñada para optimizar y conectar todos los procesos de tu institución educativa.
             </p>
@@ -194,16 +197,15 @@ export default function LoginPage() {
           <div className="w-full max-w-md mx-auto bg-white/95 backdrop-blur-xl border border-white/50 rounded-[32px] p-8 sm:p-9 shadow-2xl shadow-slate-950/40">
             
             <div className="text-center mb-6">
-              <div className="inline-block mb-2">
-                <span className="text-3xl font-black tracking-tight">
-                  <span className="text-[#2fbf71]">Educa</span>
-                  <span className="text-[#223a5e]">360</span>
-                </span>
-              </div>
-              <h2 className="text-base font-extrabold text-[#223a5e] tracking-tight uppercase">
+              <Educa360Logo
+                variant="stacked"
+                className="w-44 h-auto mx-auto mb-2 drop-shadow-xs"
+                showTagline={false}
+              />
+              <h2 className="text-xs font-black text-[#223a5e] tracking-wider uppercase">
                 Iniciar Sesión
               </h2>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">
+              <p className="text-[11px] text-slate-500 font-medium mt-0.5">
                 Ingresa tus credenciales para acceder al campus
               </p>
             </div>

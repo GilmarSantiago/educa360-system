@@ -8,4 +8,6 @@ export * from './ui/StatCard';
 export * from './ui/SectionCard';
 export * from './ui/StatusBadge';
 export * from './ui/FormFields';
+export * from './ui/Educa360Logo';
+
 

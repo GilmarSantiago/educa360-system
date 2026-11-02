@@ -8,8 +8,7 @@ export function getDbPool(): pg.Pool {
   if (!pool) {
     const connectionString =
       process.env.DATABASE_URL ||
-      process.env.POSTGRES_URL ||
-      'postgresql://postgres:UMdUoLQmDZlWjiyENdVbcnHkQXHxeJCl@acela.proxy.rlwy.net:45164/railway';
+      process.env.POSTGRES_URL;
 
     if (!process.env.DATABASE_URL && !process.env.POSTGRES_URL) {
       console.warn('[Educa360 DB] Advertencia: DATABASE_URL no está definida en las variables de entorno.');

@@ -2,8 +2,7 @@ import pg from 'pg';
 import bcrypt from 'bcryptjs';
 
 const connectionString =
-  process.env.DATABASE_URL ||
-  'postgresql://postgres:UMdUoLQmDZlWjiyENdVbcnHkQXHxeJCl@acela.proxy.rlwy.net:45164/railway';
+  process.env.DATABASE_URL;
 
 const pool = new pg.Pool({
   connectionString,

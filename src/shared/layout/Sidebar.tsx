@@ -27,6 +27,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { AuthUser, UserRole } from '@/shared/types';
+import { Educa360Logo } from '@/shared/ui/Educa360Logo';
 
 interface SubmoduleItem {
   id: string;
@@ -313,23 +314,10 @@ export default function Sidebar({ user, activeTab, setActiveTab, onOpenProfile }
     <aside className="w-64 h-screen max-h-screen bg-white border-r border-slate-200/90 flex flex-col shrink-0 shadow-xs select-none z-20 overflow-hidden">
       {/* 1. Cabecera Fija del Sidebar con Branding Oficial */}
       <div className="p-4 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-[#2fbf71] flex items-center justify-center shadow-md shadow-[#2fbf71]/20 shrink-0">
-            <GraduationCap className="w-5 h-5 text-white stroke-[2.2]" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1 leading-none">
-              <span className="text-lg font-black tracking-tight text-[#2fbf71]">Educa</span>
-              <span className="text-lg font-black tracking-tight text-[#223a5e]">360</span>
-            </div>
-            <p
-              className="text-[11px] font-bold text-slate-500 truncate max-w-[145px] mt-1"
-              title={user.tenant ? user.tenant.name : 'Plataforma SaaS'}
-            >
-              {user.tenant ? user.tenant.name : 'Plataforma SaaS'}
-            </p>
-          </div>
-        </div>
+        <Educa360Logo
+          variant="compact"
+          subtitle={user.tenant ? user.tenant.name : 'Plataforma SaaS'}
+        />
       </div>
 
       {/* 2. Área Central Navegable con Scroll Suave */}

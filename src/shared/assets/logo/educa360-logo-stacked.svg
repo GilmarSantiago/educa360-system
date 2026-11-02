@@ -1,0 +1,16 @@
+<svg viewBox="0 0 360 225" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- EDUCA360 LOGO OFICIAL - VERSIÓN APILADA / CUADRADA -->
+  <text x="22" y="68" fill="#2fbf71" font-family="system-ui, -apple-system, 'Segoe UI', Montserrat, Roboto, Helvetica, Arial, sans-serif" font-weight="900" font-size="54" letter-spacing="0.5">EDUCA</text>
+  
+  <!-- 3 Escalones Ascendentes (Pilar Administrativo, Financiero, Académico) -->
+  <rect x="248" y="53" width="36" height="14" rx="4" fill="#223a5e"/>
+  <rect x="269" y="35" width="36" height="14" rx="4" fill="#2fbf71"/>
+  <rect x="290" y="17" width="36" height="14" rx="4" fill="#223a5e"/>
+  
+  <!-- Número 360 -->
+  <text x="178" y="178" text-anchor="middle" fill="#223a5e" font-family="system-ui, -apple-system, 'Segoe UI', Montserrat, Roboto, Helvetica, Arial, sans-serif" font-weight="900" font-size="144" letter-spacing="-6">360</text>
+  
+  <!-- Lema Institucional -->
+  <text x="180" y="208" text-anchor="middle" fill="#2fbf71" font-family="system-ui, -apple-system, 'Segoe UI', Montserrat, Roboto, Helvetica, Arial, sans-serif" font-weight="400" font-size="20.5" letter-spacing="0.4">Software de Gestión Educativa</text>
+</svg>
+
