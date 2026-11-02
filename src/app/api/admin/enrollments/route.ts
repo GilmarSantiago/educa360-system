@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, hashPassword } from '@/lib/auth';
-import { query } from '@/lib/db';
+import { query, withTransaction } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,6 +9,9 @@ export async function GET(req: NextRequest) {
 
     const session = await verifyToken(token);
     if (!session || !session.tenantId) return NextResponse.json({ success: false, message: 'Sesión inválida' }, { status: 401 });
+    if (!['ADMINISTRADOR', 'SOPORTE', 'COLABORADOR'].includes(session.role)) {
+      return NextResponse.json({ success: false, message: 'Permiso denegado' }, { status: 403 });
+    }
     const tenantId = session.tenantId;
 
     const { searchParams } = new URL(req.url);
@@ -142,10 +145,19 @@ export async function POST(req: NextRequest) {
 
     const session = await verifyToken(token);
     if (!session || !session.tenantId) return NextResponse.json({ success: false, message: 'Sesión inválida' }, { status: 401 });
+    if (!['ADMINISTRADOR', 'SOPORTE', 'COLABORADOR'].includes(session.role)) {
+      return NextResponse.json({ success: false, message: 'No tienes permisos para procesar matrículas' }, { status: 403 });
+    }
     const tenantId = session.tenantId;
 
     const body = await req.json();
     const { action } = body;
+
+    return await withTransaction(async (query) => {
+    // Obtener día de vencimiento configurado por el colegio (por defecto día 5)
+    const cfgRes = await query('SELECT monthly_due_day FROM v2.school_configs WHERE tenant_id = $1 LIMIT 1', [tenantId]);
+    const rawDueDay = Number(cfgRes.rows[0]?.monthly_due_day || 5);
+    const dueDayStr = String(Math.min(28, Math.max(1, rawDueDay))).padStart(2, '0');
 
     // =========================================================================
     // ACCIÓN 0: FLUJO INTEGRAL DE MATRÍCULA (APODERADO + ALUMNO + CUOTA INGRESO + MATRÍCULA + PENSIONES)
@@ -316,7 +328,8 @@ export async function POST(req: NextRequest) {
         `SELECT s.id, s.full_name, s.capacity, s.enrolled_count, g.grade_name
          FROM v2.school_sections s
          JOIN v2.school_grades g ON s.grade_id = g.id
-         WHERE s.id = $1 AND s.tenant_id = $2`,
+         WHERE s.id = $1 AND s.tenant_id = $2
+         FOR UPDATE OF s`,
         [section_id, tenantId]
       );
       if (sectionRes.rows.length === 0) {
@@ -461,8 +474,8 @@ export async function POST(req: NextRequest) {
               finalEntryFee,
               `Cuota de Ingreso - ${studentFullName} (${section.full_name})`,
               enrollDateStr,
-              entry_payment_method || enrollment_payment_method,
-              entry_receipt_number?.trim() || enrollment_receipt_number.trim(),
+              entry_payment_method || enrollment_payment_method || 'EFECTIVO',
+              entry_receipt_number?.trim() || enrollment_receipt_number?.trim() || `REC-${enrollmentCode}`,
               session.userId,
             ]
           );
@@ -489,8 +502,8 @@ export async function POST(req: NextRequest) {
             pay_entry_now ? 'PAID' : 'PENDING',
             entryTxId,
             pay_entry_now ? enrollDateStr : null,
-            pay_entry_now ? (entry_payment_method || enrollment_payment_method) : null,
-            pay_entry_now ? (entry_receipt_number?.trim() || enrollment_receipt_number.trim()) : null,
+            pay_entry_now ? (entry_payment_method || enrollment_payment_method || 'EFECTIVO') : null,
+            pay_entry_now ? (entry_receipt_number?.trim() || enrollment_receipt_number?.trim() || `REC-${enrollmentCode}`) : null,
           ]
         );
       }
@@ -511,7 +524,7 @@ export async function POST(req: NextRequest) {
 
       for (const m of months) {
         const periodMonth = `${yearCode}-${m.code}`;
-        const dueDate = `${yearCode}-${m.code}-05`;
+        const dueDate = `${yearCode}-${m.code}-${dueDayStr}`;
         const tuitionId = `tui-${periodMonth}-${studentId}-${Math.floor(Math.random() * 1000)}`;
 
         await query(
@@ -673,7 +686,8 @@ export async function POST(req: NextRequest) {
         `SELECT s.id, s.full_name, s.capacity, s.enrolled_count, g.grade_name
          FROM v2.school_sections s
          JOIN v2.school_grades g ON s.grade_id = g.id
-         WHERE s.id = $1 AND s.tenant_id = $2`,
+         WHERE s.id = $1 AND s.tenant_id = $2
+         FOR UPDATE OF s`,
         [section_id, tenantId]
       );
       if (sectionRes.rows.length === 0) {
@@ -853,7 +867,7 @@ export async function POST(req: NextRequest) {
 
       for (const m of months) {
         const periodMonth = `${yearCode}-${m.code}`;
-        const dueDate = `${yearCode}-${m.code}-05`;
+        const dueDate = `${yearCode}-${m.code}-${dueDayStr}`;
         const tuitionId = `tui-${periodMonth}-${student_id}-${Math.floor(Math.random() * 1000)}`;
 
         await query(
@@ -937,6 +951,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: false, message: 'Acción no reconocida' }, { status: 400 });
+    });
   } catch (error: unknown) {
     console.error('[API /api/admin/enrollments POST] Error:', error);
     const msg = error instanceof Error ? error.message : 'Error interno';

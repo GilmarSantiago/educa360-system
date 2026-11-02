@@ -11,6 +11,9 @@ export async function GET(req: NextRequest) {
     if (!session || !session.tenantId) {
       return NextResponse.json({ success: false, message: 'Sesión inválida' }, { status: 401 });
     }
+    if (!['ADMINISTRADOR', 'SOPORTE', 'COLABORADOR'].includes(session.role)) {
+      return NextResponse.json({ success: false, message: 'Permiso denegado' }, { status: 403 });
+    }
 
     const tenantId = session.tenantId;
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
-import { query } from '@/lib/db';
+import { query, withTransaction } from '@/lib/db';
 import { formatDbDate } from '@/lib/finances';
 
 // =========================================================================
@@ -71,7 +71,8 @@ export async function GET(req: NextRequest) {
       );
       const institution = instRes.rows[0] || {};
 
-      // 3. Obtener todas las cuotas / conceptos registrados para este alumno
+      // 3. Obtener todas las cuotas / conceptos registrados para este alumno (sin colisión por homonimia)
+      const exactFullName = `${s.first_name || ''} ${s.last_name || ''}`.trim();
       const tuitionsRes = await query(
         `SELECT id, tenant_id, student_id, enrollment_id, guardian_id, concept_type,
                 student_name, grade_section, parent_name, parent_phone, period_month,
@@ -79,7 +80,7 @@ export async function GET(req: NextRequest) {
                 status, transaction_id, TO_CHAR(paid_date, 'YYYY-MM-DD') as paid_date,
                 payment_method, receipt_number, created_at, updated_at
          FROM v2.student_tuitions
-         WHERE tenant_id = $1 AND (student_id = $2 OR student_name ILIKE $3)
+         WHERE tenant_id = $1 AND (student_id = $2 OR (student_id IS NULL AND LOWER(TRIM(student_name)) = LOWER($3)))
          ORDER BY 
            CASE 
              WHEN concept_type = 'INGRESO' THEN 1
@@ -88,7 +89,7 @@ export async function GET(req: NextRequest) {
            END,
            due_date ASC,
            period_month ASC`,
-        [tenantId, studentId, `%${s.first_name}%${s.last_name}%`]
+        [tenantId, studentId, exactFullName]
       );
 
       const items = tuitionsRes.rows.map((r: any) => {
@@ -309,166 +310,169 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, message: 'Debes seleccionar al menos un concepto a cobrar.' }, { status: 400 });
       }
 
-      // 1. Obtener las cuotas a cobrar que pertenezcan al colegio y estén pendientes
-      const placeholders = tuition_ids.map((_, i) => `$${i + 2}`).join(',');
-      const tuitsRes = await query(
-        `SELECT id, student_id, student_name, grade_section, parent_name, parent_phone,
-                concept_type, period_month, monthly_amount, status
-         FROM v2.student_tuitions
-         WHERE tenant_id = $1 AND id IN (${placeholders})`,
-        [tenantId, ...tuition_ids]
-      );
+      return await withTransaction(async (txQuery) => {
+        // 1. Obtener las cuotas a cobrar que pertenezcan al colegio y estén pendientes (con bloqueo FOR UPDATE)
+        const placeholders = tuition_ids.map((_, i) => `$${i + 2}`).join(',');
+        const tuitsRes = await txQuery(
+          `SELECT id, student_id, student_name, grade_section, parent_name, parent_phone,
+                  concept_type, period_month, monthly_amount, status
+           FROM v2.student_tuitions
+           WHERE tenant_id = $1 AND id IN (${placeholders})
+           FOR UPDATE`,
+          [tenantId, ...tuition_ids]
+        );
 
-      if (tuitsRes.rows.length === 0) {
-        return NextResponse.json({ success: false, message: 'No se encontraron las cuotas seleccionadas.' }, { status: 404 });
-      }
+        if (tuitsRes.rows.length === 0) {
+          return NextResponse.json({ success: false, message: 'No se encontraron las cuotas seleccionadas.' }, { status: 404 });
+        }
 
-      const pendingTuitions = tuitsRes.rows.filter((t: any) => t.status !== 'PAID');
-      if (pendingTuitions.length === 0) {
-        return NextResponse.json({ success: false, message: 'Todos los conceptos seleccionados ya fueron pagados previamente.' }, { status: 400 });
-      }
+        const pendingTuitions = tuitsRes.rows.filter((t: any) => t.status !== 'PAID');
+        if (pendingTuitions.length === 0) {
+          return NextResponse.json({ success: false, message: 'Todos los conceptos seleccionados ya fueron pagados previamente.' }, { status: 400 });
+        }
 
-      const paymentDate = paid_date || new Date().toISOString().split('T')[0];
-      const studentId = pendingTuitions[0].student_id;
-      const studentName = pendingTuitions[0].student_name;
-      const gradeSection = pendingTuitions[0].grade_section;
+        const paymentDate = paid_date || new Date().toISOString().split('T')[0];
+        const studentId = pendingTuitions[0].student_id;
+        const studentName = pendingTuitions[0].student_name;
+        const gradeSection = pendingTuitions[0].grade_section;
 
-      // Generar o usar número de recibo
-      let officialReceipt = receipt_number?.trim();
-      if (!officialReceipt) {
-        const countRes = await query(
-          `SELECT COUNT(*) as count FROM v2.financial_transactions WHERE tenant_id = $1 AND receipt_number LIKE 'REC-%'`,
+        // Generar o usar número de recibo
+        let officialReceipt = receipt_number?.trim();
+        if (!officialReceipt) {
+          const countRes = await txQuery(
+            `SELECT COUNT(*) as count FROM v2.financial_transactions WHERE tenant_id = $1 AND receipt_number LIKE 'REC-%'`,
+            [tenantId]
+          );
+          const seq = Number(countRes.rows[0]?.count || 0) + 1;
+          const currentYear = new Date().getFullYear();
+          officialReceipt = `REC-${currentYear}-${String(seq).padStart(5, '0')}`;
+        }
+
+        // 2. Categorías de ingresos para asignación contable
+        const catRes = await txQuery(
+          `SELECT id, name FROM v2.financial_categories WHERE tenant_id = $1 AND type = 'INCOME'`,
           [tenantId]
         );
-        const seq = Number(countRes.rows[0]?.count || 0) + 1;
-        const currentYear = new Date().getFullYear();
-        officialReceipt = `REC-${currentYear}-${String(seq).padStart(5, '0')}`;
-      }
+        const categories = catRes.rows;
 
-      // 2. Categorías de ingresos para asignación contable
-      const catRes = await query(
-        `SELECT id, name FROM v2.financial_categories WHERE tenant_id = $1 AND type = 'INCOME'`,
-        [tenantId]
-      );
-      const categories = catRes.rows;
+        const getCategoryId = (conceptType: string) => {
+          if (conceptType === 'MATRICULA') {
+            return categories.find((c: any) => c.name.toLowerCase().includes('matrícula'))?.id || null;
+          }
+          if (conceptType === 'INGRESO') {
+            return categories.find((c: any) => c.name.toLowerCase().includes('ingreso'))?.id || null;
+          }
+          if (conceptType === 'PENSION') {
+            return categories.find((c: any) => c.name.toLowerCase().includes('pensión') || c.name.toLowerCase().includes('mensualidad'))?.id || null;
+          }
+          return categories.find((c: any) => c.name.toLowerCase().includes('otros'))?.id || categories[0]?.id || null;
+        };
 
-      const getCategoryId = (conceptType: string) => {
-        if (conceptType === 'MATRICULA') {
-          return categories.find((c: any) => c.name.toLowerCase().includes('matrícula'))?.id || null;
+        const paidItems: any[] = [];
+        let totalCollected = 0;
+
+        // 3. Procesar cada cuota: Crear transacción en caja y marcar cuota como PAID
+        for (const t of pendingTuitions) {
+          const amountNum = Number(t.monthly_amount);
+          totalCollected += amountNum;
+          const txId = `tx-col-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+
+          let conceptLabel = 'Pensión Escolar';
+          if (t.concept_type === 'MATRICULA') conceptLabel = 'Matrícula Anual';
+          else if (t.concept_type === 'INGRESO') conceptLabel = 'Cuota de Ingreso / Admisión';
+          else if (t.concept_type === 'PENSION') conceptLabel = `Pensión ${t.period_month}`;
+          else if (t.concept_type) conceptLabel = t.concept_type;
+
+          const description = `Cobro de ${conceptLabel} - Alumno: ${t.student_name} (${t.grade_section})`;
+          const catId = getCategoryId(t.concept_type);
+
+          // Insertar en v2.financial_transactions
+          await txQuery(
+            `INSERT INTO v2.financial_transactions
+              (id, tenant_id, category_id, type, amount, description, transaction_date, payment_method, receipt_number, registered_by, funding_source, created_at)
+             VALUES ($1, $2, $3, 'INCOME', $4, $5, $6, $7, $8, $9, 'PROPIO', NOW())`,
+            [
+              txId,
+              tenantId,
+              catId,
+              amountNum,
+              description,
+              paymentDate,
+              payment_method,
+              officialReceipt,
+              session.userId,
+            ]
+          );
+
+          // Actualizar en v2.student_tuitions
+          await txQuery(
+            `UPDATE v2.student_tuitions
+             SET status = 'PAID', transaction_id = $1, paid_date = $2, payment_method = $3, receipt_number = $4, updated_at = NOW()
+             WHERE id = $5 AND tenant_id = $6`,
+            [txId, paymentDate, payment_method, officialReceipt, t.id, tenantId]
+          );
+
+          paidItems.push({
+            id: t.id,
+            concept_type: t.concept_type,
+            concept_label: conceptLabel,
+            period_month: t.period_month,
+            amount: amountNum,
+            transaction_id: txId,
+          });
         }
-        if (conceptType === 'INGRESO') {
-          return categories.find((c: any) => c.name.toLowerCase().includes('ingreso'))?.id || null;
-        }
-        if (conceptType === 'PENSION') {
-          return categories.find((c: any) => c.name.toLowerCase().includes('pensión') || c.name.toLowerCase().includes('mensualidad'))?.id || null;
-        }
-        return categories.find((c: any) => c.name.toLowerCase().includes('otros'))?.id || categories[0]?.id || null;
-      };
 
-      const paidItems: any[] = [];
-      let totalCollected = 0;
+        // 4. Datos institucionales para el recibo
+        const tenantRow = await txQuery(
+          `SELECT name, ruc, phone, email, address, logo FROM v2.tenants WHERE id = $1`,
+          [tenantId]
+        );
+        const institution = tenantRow.rows[0] || {};
 
-      // 3. Procesar cada cuota: Crear transacción en caja y marcar cuota como PAID
-      for (const t of pendingTuitions) {
-        const amountNum = Number(t.monthly_amount);
-        totalCollected += amountNum;
-        const txId = `tx-col-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-
-        let conceptLabel = 'Pensión Escolar';
-        if (t.concept_type === 'MATRICULA') conceptLabel = 'Matrícula Anual';
-        else if (t.concept_type === 'INGRESO') conceptLabel = 'Cuota de Ingreso / Admisión';
-        else if (t.concept_type === 'PENSION') conceptLabel = `Pensión ${t.period_month}`;
-        else if (t.concept_type) conceptLabel = t.concept_type;
-
-        const description = `Cobro de ${conceptLabel} - Alumno: ${t.student_name} (${t.grade_section})`;
-        const catId = getCategoryId(t.concept_type);
-
-        // Insertar en v2.financial_transactions
-        await query(
-          `INSERT INTO v2.financial_transactions
-            (id, tenant_id, category_id, type, amount, description, transaction_date, payment_method, receipt_number, registered_by, funding_source, created_at)
-           VALUES ($1, $2, $3, 'INCOME', $4, $5, $6, $7, $8, $9, 'PROPIO', NOW())`,
+        // 5. Auditoría
+        await txQuery(
+          `INSERT INTO v2.audit_logs (id, tenant_id, user_id, action, details, ip_address)
+           VALUES ($1, $2, $3, 'COLLECT_ACCOUNT_STATEMENT_PAYMENT', $4, $5)`,
           [
-            txId,
+            `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
             tenantId,
-            catId,
-            amountNum,
-            description,
-            paymentDate,
-            payment_method,
-            officialReceipt,
             session.userId,
+            `Recibo ${officialReceipt} emitido para ${studentName} por S/ ${totalCollected.toFixed(2)} (${paidItems.length} concepto(s))`,
+            req.headers.get('x-forwarded-for') || '127.0.0.1',
           ]
         );
 
-        // Actualizar en v2.student_tuitions
-        await query(
-          `UPDATE v2.student_tuitions
-           SET status = 'PAID', transaction_id = $1, paid_date = $2, payment_method = $3, receipt_number = $4, updated_at = NOW()
-           WHERE id = $5`,
-          [txId, paymentDate, payment_method, officialReceipt, t.id]
-        );
-
-        paidItems.push({
-          id: t.id,
-          concept_type: t.concept_type,
-          concept_label: conceptLabel,
-          period_month: t.period_month,
-          amount: amountNum,
-          transaction_id: txId,
+        return NextResponse.json({
+          success: true,
+          message: `¡Cobranza procesada exitosamente! Se emitió el comprobante ${officialReceipt} por S/ ${totalCollected.toFixed(2)}.`,
+          receipt: {
+            receipt_number: officialReceipt,
+            payment_date: paymentDate,
+            created_at: new Date().toISOString(),
+            cashier_name: session.name || session.username || 'Caja Central',
+            student: {
+              id: studentId,
+              name: studentName,
+              grade_section: gradeSection,
+            },
+            guardian: {
+              name: pendingTuitions[0].parent_name,
+              phone: pendingTuitions[0].parent_phone,
+            },
+            institution: {
+              name: institution.name || 'Colegio Educa360',
+              ruc: institution.ruc || '',
+              phone: institution.phone || '',
+              email: institution.email || '',
+              address: institution.address || '',
+              logo: institution.logo || null,
+            },
+            items: paidItems,
+            total_amount: totalCollected,
+            payment_method,
+            notes: notes?.trim() || null,
+          },
         });
-      }
-
-      // 4. Datos institucionales para el recibo
-      const tenantRow = await query(
-        `SELECT name, ruc, phone, email, address, logo FROM v2.tenants WHERE id = $1`,
-        [tenantId]
-      );
-      const institution = tenantRow.rows[0] || {};
-
-      // 5. Auditoría
-      await query(
-        `INSERT INTO v2.audit_logs (id, tenant_id, user_id, action, details, ip_address)
-         VALUES ($1, $2, $3, 'COLLECT_ACCOUNT_STATEMENT_PAYMENT', $4, $5)`,
-        [
-          `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          tenantId,
-          session.userId,
-          `Recibo ${officialReceipt} emitido para ${studentName} por S/ ${totalCollected.toFixed(2)} (${paidItems.length} concepto(s))`,
-          req.headers.get('x-forwarded-for') || '127.0.0.1',
-        ]
-      );
-
-      return NextResponse.json({
-        success: true,
-        message: `¡Cobranza procesada exitosamente! Se emitió el comprobante ${officialReceipt} por S/ ${totalCollected.toFixed(2)}.`,
-        receipt: {
-          receipt_number: officialReceipt,
-          payment_date: paymentDate,
-          created_at: new Date().toISOString(),
-          cashier_name: session.name || session.username || 'Caja Central',
-          student: {
-            id: studentId,
-            name: studentName,
-            grade_section: gradeSection,
-          },
-          guardian: {
-            name: pendingTuitions[0].parent_name,
-            phone: pendingTuitions[0].parent_phone,
-          },
-          institution: {
-            name: institution.name || 'Colegio Educa360',
-            ruc: institution.ruc || '',
-            phone: institution.phone || '',
-            email: institution.email || '',
-            address: institution.address || '',
-            logo: institution.logo || null,
-          },
-          items: paidItems,
-          total_amount: totalCollected,
-          payment_method,
-          notes: notes?.trim() || null,
-        },
       });
     }
 

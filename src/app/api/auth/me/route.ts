@@ -30,10 +30,21 @@ export async function GET(req: NextRequest) {
     );
 
     if (userRes.rows.length === 0 || !userRes.rows[0].is_active) {
-      return NextResponse.json({ success: false, user: null }, { status: 401 });
+      const res = NextResponse.json({ success: false, user: null, message: 'Usuario inactivo o no encontrado' }, { status: 401 });
+      res.cookies.delete('educa360_session');
+      return res;
     }
 
     const row = userRes.rows[0];
+
+    if (row.tenant_id && row.tenant_status === 'SUSPENDED' && row.role !== 'SOPORTE') {
+      const res = NextResponse.json(
+        { success: false, user: null, message: 'El acceso de la institución educativa se encuentra suspendido temporalmente.' },
+        { status: 403 }
+      );
+      res.cookies.delete('educa360_session');
+      return res;
+    }
 
     const user = {
       id: row.id,

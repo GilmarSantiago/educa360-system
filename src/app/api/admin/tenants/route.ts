@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, hashPassword } from '@/lib/auth';
-import { query } from '@/lib/db';
+import { query, withTransaction } from '@/lib/db';
 
 // =========================================================================
 // GET: Listar colegios clientes con conteo de usuarios y director asignado
@@ -113,93 +113,95 @@ export async function POST(req: NextRequest) {
     const cleanCode = code.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
     const cleanAdminUsername = adminUsername.trim().toLowerCase().replace(/\s+/g, '');
 
-    // 1. Verificar si el código del colegio ya existe
-    const existingCode = await query(`SELECT id FROM v2.tenants WHERE LOWER(code) = $1 LIMIT 1`, [cleanCode]);
-    if (existingCode.rows.length > 0) {
-      return NextResponse.json(
-        { success: false, message: `El identificador de colegio "${cleanCode}" ya está en uso.` },
-        { status: 400 }
+    return await withTransaction(async (query) => {
+      // 1. Verificar si el código del colegio ya existe
+      const existingCode = await query(`SELECT id FROM v2.tenants WHERE LOWER(code) = $1 LIMIT 1`, [cleanCode]);
+      if (existingCode.rows.length > 0) {
+        return NextResponse.json(
+          { success: false, message: `El identificador de colegio "${cleanCode}" ya está en uso.` },
+          { status: 400 }
+        );
+      }
+
+      // 2. Verificar si el username del director ya existe
+      const existingUser = await query(`SELECT id FROM v2.users WHERE LOWER(username) = $1 LIMIT 1`, [cleanAdminUsername]);
+      if (existingUser.rows.length > 0) {
+        return NextResponse.json(
+          { success: false, message: `El nombre de usuario "@${cleanAdminUsername}" ya existe. Elige otro.` },
+          { status: 400 }
+        );
+      }
+
+      const tenantId = `tnt-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const configId = `cfg-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const adminId = `usr-dir-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+      // 3. Crear el Colegio (Tenant)
+      await query(
+        `INSERT INTO v2.tenants (
+          id, code, name, ruc, email, phone, address, status, plan, monthly_fee, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE', $8, $9, NOW(), NOW())`,
+        [
+          tenantId,
+          cleanCode,
+          name.trim(),
+          ruc ? ruc.trim() : null,
+          email ? email.trim() : null,
+          phone ? phone.trim() : null,
+          address ? address.trim() : null,
+          plan,
+          Number(monthly_fee) || 0,
+        ]
       );
-    }
 
-    // 2. Verificar si el username del director ya existe
-    const existingUser = await query(`SELECT id FROM v2.users WHERE LOWER(username) = $1 LIMIT 1`, [cleanAdminUsername]);
-    if (existingUser.rows.length > 0) {
-      return NextResponse.json(
-        { success: false, message: `El nombre de usuario "@${cleanAdminUsername}" ya existe. Elige otro.` },
-        { status: 400 }
+      // 4. Crear la Configuración Inicial de Reglas del Colegio
+      await query(
+        `INSERT INTO v2.school_configs (
+          id, tenant_id, grading_system, passing_grade, period_type, monthly_due_day,
+          late_fee_daily_percentage, grace_days, allow_multiple_cash_sessions,
+          require_token_for_differences, created_at
+        ) VALUES ($1, $2, 'vigesimal', 11, 'bimestre', 5, 0.5, 3, true, true, NOW())`,
+        [configId, tenantId]
       );
-    }
 
-    const tenantId = `tnt-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const configId = `cfg-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const adminId = `usr-dir-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      // 5. Crear el Primer Usuario Administrador (Director)
+      const passwordHash = await hashPassword(adminPassword);
+      await query(
+        `INSERT INTO v2.users (
+          id, tenant_id, username, password, name, email, phone, document, role, is_active, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'ADMINISTRADOR', true, NOW(), NOW())`,
+        [
+          adminId,
+          tenantId,
+          cleanAdminUsername,
+          passwordHash,
+          adminName.trim(),
+          adminEmail ? adminEmail.trim() : email ? email.trim() : null,
+          adminPhone ? adminPhone.trim() : null,
+          adminDocument ? adminDocument.trim() : null,
+        ]
+      );
 
-    // 3. Crear el Colegio (Tenant)
-    await query(
-      `INSERT INTO v2.tenants (
-        id, code, name, ruc, email, phone, address, status, plan, monthly_fee, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE', $8, $9, NOW(), NOW())`,
-      [
+      // 6. Registrar en Auditoría
+      await query(
+        `INSERT INTO v2.audit_logs (id, tenant_id, user_id, action, details, ip_address)
+         VALUES ($1, $2, $3, 'CREATE_TENANT_ONBOARDING', $4, $5)`,
+        [
+          `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          tenantId,
+          session.userId,
+          `Nuevo colegio registrado: "${name}" (${cleanCode}) con director @${cleanAdminUsername}`,
+          req.headers.get('x-forwarded-for') || '127.0.0.1',
+        ]
+      );
+
+      return NextResponse.json({
+        success: true,
+        message: `¡Colegio "${name}" y Director @${cleanAdminUsername} creados exitosamente!`,
         tenantId,
-        cleanCode,
-        name.trim(),
-        ruc ? ruc.trim() : null,
-        email ? email.trim() : null,
-        phone ? phone.trim() : null,
-        address ? address.trim() : null,
-        plan,
-        Number(monthly_fee) || 0,
-      ]
-    );
-
-    // 4. Crear la Configuración Inicial de Reglas del Colegio
-    await query(
-      `INSERT INTO v2.school_configs (
-        id, tenant_id, grading_system, passing_grade, period_type, monthly_due_day,
-        late_fee_daily_percentage, grace_days, allow_multiple_cash_sessions,
-        require_token_for_differences, created_at
-      ) VALUES ($1, $2, 'vigesimal', 11, 'bimestre', 5, 0.5, 3, true, true, NOW())`,
-      [configId, tenantId]
-    );
-
-    // 5. Crear el Primer Usuario Administrador (Director)
-    const passwordHash = await hashPassword(adminPassword);
-    await query(
-      `INSERT INTO v2.users (
-        id, tenant_id, username, password, name, email, phone, document, role, is_active, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'ADMINISTRADOR', true, NOW(), NOW())`,
-      [
         adminId,
-        tenantId,
-        cleanAdminUsername,
-        passwordHash,
-        adminName.trim(),
-        adminEmail ? adminEmail.trim() : email ? email.trim() : null,
-        adminPhone ? adminPhone.trim() : null,
-        adminDocument ? adminDocument.trim() : null,
-      ]
-    );
-
-    // 6. Registrar en Auditoría
-    await query(
-      `INSERT INTO v2.audit_logs (id, tenant_id, user_id, action, details, ip_address)
-       VALUES ($1, $2, $3, 'CREATE_TENANT_ONBOARDING', $4, $5)`,
-      [
-        `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        tenantId,
-        session.userId,
-        `Nuevo colegio registrado: "${name}" (${cleanCode}) con director @${cleanAdminUsername}`,
-        req.headers.get('x-forwarded-for') || '127.0.0.1',
-      ]
-    );
-
-    return NextResponse.json({
-      success: true,
-      message: `¡Colegio "${name}" y Director @${cleanAdminUsername} creados exitosamente!`,
-      tenantId,
-      adminId,
-      code: cleanCode,
+        code: cleanCode,
+      });
     });
   } catch (error: unknown) {
     console.error('[API /api/admin/tenants POST] Error:', error);

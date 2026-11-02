@@ -9,6 +9,9 @@ export async function GET(req: NextRequest) {
 
     const session = await verifyToken(token);
     if (!session || !session.tenantId) return NextResponse.json({ success: false, message: 'Sesión inválida' }, { status: 401 });
+    if (!['ADMINISTRADOR', 'SOPORTE', 'COLABORADOR', 'MAESTRO'].includes(session.role)) {
+      return NextResponse.json({ success: false, message: 'Permiso denegado' }, { status: 403 });
+    }
     const tenantId = session.tenantId;
 
     const { searchParams } = new URL(req.url);
@@ -108,6 +111,9 @@ export async function POST(req: NextRequest) {
 
     const session = await verifyToken(token);
     if (!session || !session.tenantId) return NextResponse.json({ success: false, message: 'Sesión inválida' }, { status: 401 });
+    if (!['ADMINISTRADOR', 'SOPORTE', 'COLABORADOR'].includes(session.role)) {
+      return NextResponse.json({ success: false, message: 'No tienes permisos para registrar o modificar estudiantes' }, { status: 403 });
+    }
     const tenantId = session.tenantId;
 
     const body = await req.json();

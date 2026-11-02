@@ -107,6 +107,9 @@ export async function POST(req: NextRequest) {
 
     const session = await verifyToken(token);
     if (!session || !session.tenantId) return NextResponse.json({ success: false, message: 'Sesión inválida' }, { status: 401 });
+    if (!['ADMINISTRADOR', 'SOPORTE'].includes(session.role)) {
+      return NextResponse.json({ success: false, message: 'Solo Dirección o Soporte pueden modificar la estructura académica' }, { status: 403 });
+    }
     const tenantId = session.tenantId;
 
     const body = await req.json();

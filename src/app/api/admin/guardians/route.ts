@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, hashPassword } from '@/lib/auth';
-import { query } from '@/lib/db';
+import { query, withTransaction } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,6 +9,9 @@ export async function GET(req: NextRequest) {
 
     const session = await verifyToken(token);
     if (!session || !session.tenantId) return NextResponse.json({ success: false, message: 'Sesión inválida' }, { status: 401 });
+    if (!['ADMINISTRADOR', 'SOPORTE', 'COLABORADOR'].includes(session.role)) {
+      return NextResponse.json({ success: false, message: 'Permiso denegado' }, { status: 403 });
+    }
     const tenantId = session.tenantId;
 
     const { searchParams } = new URL(req.url);
@@ -19,9 +22,21 @@ export async function GET(req: NextRequest) {
              g.first_name, g.last_name, g.relationship, g.phone, g.alt_phone, 
              g.email, g.address, g.occupation, g.billing_tax_id, g.billing_name, 
              g.created_at,
-             COUNT(s.id) as students_count
+             COUNT(s.id) as students_count,
+             COALESCE(
+               json_agg(
+                 json_build_object(
+                   'id', s.id,
+                   'first_name', s.first_name,
+                   'last_name', s.last_name,
+                   'document_number', s.document_number,
+                   'status', s.status
+                 )
+               ) FILTER (WHERE s.id IS NOT NULL),
+               '[]'::json
+             ) as students
       FROM v2.guardians g
-      LEFT JOIN v2.students s ON s.guardian_id = g.id
+      LEFT JOIN v2.students s ON s.guardian_id = g.id AND s.tenant_id = g.tenant_id
       WHERE g.tenant_id = $1
     `;
     const values: any[] = [tenantId];
@@ -35,21 +50,11 @@ export async function GET(req: NextRequest) {
 
     const res = await query(sql, values);
 
-    // Obtener los estudiantes vinculados a cada apoderado
-    const guardiansWithStudents = await Promise.all(
-      res.rows.map(async (guardian: any) => {
-        const studentsRes = await query(
-          `SELECT id, first_name, last_name, document_number, status
-           FROM v2.students WHERE guardian_id = $1 AND tenant_id = $2`,
-          [guardian.id, tenantId]
-        );
-        return {
-          ...guardian,
-          students_count: Number(guardian.students_count || 0),
-          students: studentsRes.rows,
-        };
-      })
-    );
+    const guardiansWithStudents = res.rows.map((guardian: any) => ({
+      ...guardian,
+      students_count: Number(guardian.students_count || 0),
+      students: Array.isArray(guardian.students) ? guardian.students : [],
+    }));
 
     return NextResponse.json({
       success: true,
@@ -69,6 +74,9 @@ export async function POST(req: NextRequest) {
 
     const session = await verifyToken(token);
     if (!session || !session.tenantId) return NextResponse.json({ success: false, message: 'Sesión inválida' }, { status: 401 });
+    if (!['ADMINISTRADOR', 'SOPORTE', 'COLABORADOR'].includes(session.role)) {
+      return NextResponse.json({ success: false, message: 'No tienes permisos para gestionar apoderados' }, { status: 403 });
+    }
     const tenantId = session.tenantId;
 
     const body = await req.json();

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
-import { query } from '@/lib/db';
+import { query, withTransaction } from '@/lib/db';
 import { formatDbDate } from '@/lib/finances';
 
 export async function GET(req: NextRequest) {
@@ -13,6 +13,10 @@ export async function GET(req: NextRequest) {
     const session = await verifyToken(token);
     if (!session) {
       return NextResponse.json({ success: false, message: 'Sesión inválida' }, { status: 401 });
+    }
+
+    if (!['ADMINISTRADOR', 'SOPORTE', 'COLABORADOR'].includes(session.role)) {
+      return NextResponse.json({ success: false, message: 'Permiso denegado' }, { status: 403 });
     }
 
     const tenantId = session.tenantId;
@@ -185,78 +189,80 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, message: 'ID de pensión requerido' }, { status: 400 });
       }
 
-      // 1. Obtener datos de la pensión
-      const tuitRes = await query(
-        `SELECT id, student_name, grade_section, parent_name, period_month, monthly_amount, status
-         FROM v2.student_tuitions WHERE id = $1 AND tenant_id = $2 LIMIT 1`,
-        [tuition_id, tenantId]
-      );
+      return await withTransaction(async (txQuery) => {
+        // 1. Obtener datos de la pensión con bloqueo de fila para evitar cobros duplicados
+        const tuitRes = await txQuery(
+          `SELECT id, student_name, grade_section, parent_name, period_month, monthly_amount, status
+           FROM v2.student_tuitions WHERE id = $1 AND tenant_id = $2 FOR UPDATE`,
+          [tuition_id, tenantId]
+        );
 
-      if (tuitRes.rows.length === 0) {
-        return NextResponse.json({ success: false, message: 'Registro de pensión no encontrado' }, { status: 404 });
-      }
+        if (tuitRes.rows.length === 0) {
+          return NextResponse.json({ success: false, message: 'Registro de pensión no encontrado' }, { status: 404 });
+        }
 
-      const tuit = tuitRes.rows[0];
-      if (tuit.status === 'PAID') {
-        return NextResponse.json({ success: false, message: 'Esta pensión ya ha sido pagada previamente.' }, { status: 400 });
-      }
+        const tuit = tuitRes.rows[0];
+        if (tuit.status === 'PAID') {
+          return NextResponse.json({ success: false, message: 'Esta pensión ya ha sido pagada previamente.' }, { status: 400 });
+        }
 
-      const paymentDate = paid_date || new Date().toISOString().split('T')[0];
-      const amountNum = Number(tuit.monthly_amount);
+        const paymentDate = paid_date || new Date().toISOString().split('T')[0];
+        const amountNum = Number(tuit.monthly_amount);
 
-      // 2. Obtener o asignar categoría de ingreso "Mensualidades & Pensiones"
-      let catRes = await query(
-        `SELECT id FROM v2.financial_categories WHERE tenant_id = $1 AND name ILIKE '%Mensualidades%' LIMIT 1`,
-        [tenantId]
-      );
-      const categoryId = catRes.rows[0]?.id || null;
+        // 2. Obtener o asignar categoría de ingreso "Mensualidades & Pensiones"
+        const catRes = await txQuery(
+          `SELECT id FROM v2.financial_categories WHERE tenant_id = $1 AND name ILIKE '%Mensualidades%' LIMIT 1`,
+          [tenantId]
+        );
+        const categoryId = catRes.rows[0]?.id || null;
 
-      // 3. Crear transacción de INGRESO
-      const txId = `tx-tuit-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      const description = `Cobro Pensión ${tuit.period_month} - Alumno: ${tuit.student_name} (${tuit.grade_section})`;
+        // 3. Crear transacción de INGRESO con funding_source = 'PROPIO'
+        const txId = `tx-tuit-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const description = `Cobro Pensión ${tuit.period_month} - Alumno: ${tuit.student_name} (${tuit.grade_section})`;
 
-      await query(
-        `INSERT INTO v2.financial_transactions
-          (id, tenant_id, category_id, type, amount, description, transaction_date, payment_method, receipt_number, registered_by, created_at)
-         VALUES ($1, $2, $3, 'INCOME', $4, $5, $6, $7, $8, $9, NOW())`,
-        [
-          txId,
-          tenantId,
-          categoryId,
-          amountNum,
-          description,
-          paymentDate,
-          payment_method,
-          receipt_number ? receipt_number.trim() : null,
-          session.userId,
-        ]
-      );
+        await txQuery(
+          `INSERT INTO v2.financial_transactions
+            (id, tenant_id, category_id, type, amount, description, transaction_date, payment_method, receipt_number, registered_by, funding_source, created_at)
+           VALUES ($1, $2, $3, 'INCOME', $4, $5, $6, $7, $8, $9, 'PROPIO', NOW())`,
+          [
+            txId,
+            tenantId,
+            categoryId,
+            amountNum,
+            description,
+            paymentDate,
+            payment_method,
+            receipt_number ? receipt_number.trim() : null,
+            session.userId,
+          ]
+        );
 
-      // 4. Actualizar estado de pensión a PAID
-      await query(
-        `UPDATE v2.student_tuitions
-         SET status = 'PAID', transaction_id = $1, paid_date = $2, payment_method = $3, receipt_number = $4, updated_at = NOW()
-         WHERE id = $5`,
-        [txId, paymentDate, payment_method, receipt_number ? receipt_number.trim() : null, tuition_id]
-      );
+        // 4. Actualizar estado de pensión a PAID
+        await txQuery(
+          `UPDATE v2.student_tuitions
+           SET status = 'PAID', transaction_id = $1, paid_date = $2, payment_method = $3, receipt_number = $4, updated_at = NOW()
+           WHERE id = $5 AND tenant_id = $6`,
+          [txId, paymentDate, payment_method, receipt_number ? receipt_number.trim() : null, tuition_id, tenantId]
+        );
 
-      // 5. Auditoría
-      await query(
-        `INSERT INTO v2.audit_logs (id, tenant_id, user_id, action, details, ip_address)
-         VALUES ($1, $2, $3, 'COLLECT_STUDENT_TUITION', $4, $5)`,
-        [
-          `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          tenantId,
-          session.userId,
-          `Pensión cobrada: S/ ${amountNum.toFixed(2)} - ${tuit.student_name} (${tuit.grade_section})`,
-          req.headers.get('x-forwarded-for') || '127.0.0.1',
-        ]
-      );
+        // 5. Auditoría
+        await txQuery(
+          `INSERT INTO v2.audit_logs (id, tenant_id, user_id, action, details, ip_address)
+           VALUES ($1, $2, $3, 'COLLECT_STUDENT_TUITION', $4, $5)`,
+          [
+            `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            tenantId,
+            session.userId,
+            `Pensión cobrada: S/ ${amountNum.toFixed(2)} - ${tuit.student_name} (${tuit.grade_section})`,
+            req.headers.get('x-forwarded-for') || '127.0.0.1',
+          ]
+        );
 
-      return NextResponse.json({
-        success: true,
-        message: `¡Pensión cobrada con éxito a ${tuit.student_name}! Registrado en caja por S/ ${amountNum.toFixed(2)}.`,
-        transaction_id: txId,
+        return NextResponse.json({
+          success: true,
+          message: `¡Pensión cobrada con éxito a ${tuit.student_name}! Registrado en caja por S/ ${amountNum.toFixed(2)}.`,
+          transaction_id: txId,
+        });
       });
     }
 
@@ -300,64 +306,66 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'ID de pensión requerido' }, { status: 400 });
     }
 
-    const tuitRes = await query(
-      `SELECT id, student_id, enrollment_id, student_name, grade_section, period_month, monthly_amount,
-              due_date, status, transaction_id
-       FROM v2.student_tuitions WHERE id = $1 AND tenant_id = $2 LIMIT 1`,
-      [id, tenantId]
-    );
-
-    if (tuitRes.rows.length === 0) {
-      return NextResponse.json({ success: false, message: 'Registro de pensión no encontrado' }, { status: 404 });
-    }
-
-    const t = tuitRes.rows[0];
-
-    // Protección del Pilar Administrativo: No se pueden eliminar cuotas no pagadas
-    if (t.status !== 'PAID') {
-      return NextResponse.json({
-        success: false,
-        message: 'No es posible eliminar cuotas escolares desde Finanzas. Para dar de baja a un estudiante del año escolar, gestiona la cancelación o retiro de matrícula desde el Pilar Administrativo (Matrículas).',
-      }, { status: 400 });
-    }
-
-    // Si la pensión ya había sido cobrada, anular la transacción de ingreso en el flujo de caja
-    if (t.transaction_id) {
-      await query(
-        `DELETE FROM v2.financial_transactions WHERE id = $1 AND tenant_id = $2`,
-        [t.transaction_id, tenantId]
+    return await withTransaction(async (txQuery) => {
+      const tuitRes = await txQuery(
+        `SELECT id, student_id, enrollment_id, student_name, grade_section, period_month, monthly_amount,
+                due_date, status, transaction_id
+         FROM v2.student_tuitions WHERE id = $1 AND tenant_id = $2 FOR UPDATE`,
+        [id, tenantId]
       );
-    }
 
-    // Revertir el estado de la cuota a PENDING u OVERDUE según fecha de vencimiento
-    await query(
-      `UPDATE v2.student_tuitions
-       SET status = CASE WHEN due_date < CURRENT_DATE THEN 'OVERDUE' ELSE 'PENDING' END,
-           transaction_id = NULL,
-           paid_date = NULL,
-           payment_method = NULL,
-           receipt_number = NULL,
-           updated_at = NOW()
-       WHERE id = $1 AND tenant_id = $2`,
-      [id, tenantId]
-    );
+      if (tuitRes.rows.length === 0) {
+        return NextResponse.json({ success: false, message: 'Registro de pensión no encontrado' }, { status: 404 });
+      }
 
-    // Auditoría
-    await query(
-      `INSERT INTO v2.audit_logs (id, tenant_id, user_id, action, details, ip_address)
-       VALUES ($1, $2, $3, 'VOID_TUITION_PAYMENT', $4, $5)`,
-      [
-        `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        tenantId,
-        session.userId,
-        `Cobro de pensión anulado: ${t.student_name} (${t.grade_section}) - Periodo ${t.period_month} (Monto: S/ ${Number(t.monthly_amount).toFixed(2)}). Ingreso revertido en caja.`,
-        req.headers.get('x-forwarded-for') || '127.0.0.1',
-      ]
-    );
+      const t = tuitRes.rows[0];
 
-    return NextResponse.json({
-      success: true,
-      message: `Cobro de pensión de ${t.student_name} anulado exitosamente. Se revirtió el ingreso de S/ ${Number(t.monthly_amount).toFixed(2)} en el libro de caja y la cuota regresó al estado pendiente/moroso.`,
+      // Protección del Pilar Administrativo: No se pueden eliminar cuotas no pagadas
+      if (t.status !== 'PAID') {
+        return NextResponse.json({
+          success: false,
+          message: 'No es posible eliminar cuotas escolares desde Finanzas. Para dar de baja a un estudiante del año escolar, gestiona la cancelación o retiro de matrícula desde el Pilar Administrativo (Matrículas).',
+        }, { status: 400 });
+      }
+
+      // Si la pensión ya había sido cobrada, anular la transacción de ingreso en el flujo de caja
+      if (t.transaction_id) {
+        await txQuery(
+          `DELETE FROM v2.financial_transactions WHERE id = $1 AND tenant_id = $2`,
+          [t.transaction_id, tenantId]
+        );
+      }
+
+      // Revertir el estado de la cuota a PENDING u OVERDUE según fecha de vencimiento
+      await txQuery(
+        `UPDATE v2.student_tuitions
+         SET status = CASE WHEN due_date < CURRENT_DATE THEN 'OVERDUE' ELSE 'PENDING' END,
+             transaction_id = NULL,
+             paid_date = NULL,
+             payment_method = NULL,
+             receipt_number = NULL,
+             updated_at = NOW()
+         WHERE id = $1 AND tenant_id = $2`,
+        [id, tenantId]
+      );
+
+      // Auditoría
+      await txQuery(
+        `INSERT INTO v2.audit_logs (id, tenant_id, user_id, action, details, ip_address)
+         VALUES ($1, $2, $3, 'VOID_TUITION_PAYMENT', $4, $5)`,
+        [
+          `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          tenantId,
+          session.userId,
+          `Cobro de pensión anulado: ${t.student_name} (${t.grade_section}) - Periodo ${t.period_month} (Monto: S/ ${Number(t.monthly_amount).toFixed(2)}). Ingreso revertido en caja.`,
+          req.headers.get('x-forwarded-for') || '127.0.0.1',
+        ]
+      );
+
+      return NextResponse.json({
+        success: true,
+        message: `Cobro de pensión de ${t.student_name} anulado exitosamente. Se revirtió el ingreso de S/ ${Number(t.monthly_amount).toFixed(2)} en el libro de caja y la cuota regresó al estado pendiente/moroso.`,
+      });
     });
   } catch (error: unknown) {
     console.error('[API /api/finances/tuitions DELETE] Error:', error);
