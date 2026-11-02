@@ -5,3 +5,4 @@ export const padronDeAlumnosRoutes = {
   'admin/students': studentsController,
   'admin/students/lookup': studentLookupController,
 };
+

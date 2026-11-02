@@ -29,7 +29,7 @@ import {
   AccountStatementItem,
   OfficialReceiptData,
   PaymentMethodItem,
-} from '@/types';
+} from '@/shared/types';
 import { AlertType } from '@/shared/ui/AlertToast';
 import Pagination from '@/shared/ui/Pagination';
 import OfficialReceiptPrintModal from '@/modules/financiero/pensiones-y-moras/modals/OfficialReceiptPrintModal';

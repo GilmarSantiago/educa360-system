@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, hashPassword } from '@/shared/auth';
 import { query } from '@/shared/db';
-import { UserRole } from '@/types';
+import { UserRole } from '@/shared/types';
 
 // =========================================================================
 // GET: Listar usuarios con filtros y búsqueda (Multi-Tenant protegido)

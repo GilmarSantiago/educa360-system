@@ -43,7 +43,7 @@ import {
   FeeConcept,
   FeeRule,
   StudentConditionType,
-} from '@/types';
+} from '@/shared/types';
 import { AlertType } from '@/shared/ui/AlertToast';
 
 interface IntegralEnrollmentWizardModalProps {

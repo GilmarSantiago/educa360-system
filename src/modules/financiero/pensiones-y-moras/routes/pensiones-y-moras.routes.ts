@@ -5,3 +5,4 @@ export const pensionesYMorasRoutes = {
   'finances/tuitions': tuitionsController,
   'finances/account-statement': accountStatementController,
 };
+

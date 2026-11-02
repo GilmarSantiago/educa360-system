@@ -57,7 +57,7 @@ import {
   ProductBatchPayment,
   ProductSale,
   PaymentMethodItem,
-} from '@/types';
+} from '@/shared/types';
 import { AlertType } from '@/shared/ui/AlertToast';
 import Pagination from '@/shared/ui/Pagination';
 import StudentAccountStatementView from '@/modules/financiero/pensiones-y-moras/views/StudentAccountStatementView';

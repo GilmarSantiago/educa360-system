@@ -1,5 +1,5 @@
 import { query } from '@/shared/db';
-import { FundingSourceType } from '@/types';
+import { FundingSourceType } from '@/shared/types';
 
 export interface FundingCheckResult {
   allowed: boolean;

@@ -3,3 +3,4 @@ import * as academicStructureController from '../controllers/academic-structure.
 export const aulasYVacantesRoutes = {
   'admin/academic-structure': academicStructureController,
 };
+

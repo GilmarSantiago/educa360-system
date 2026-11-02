@@ -13,3 +13,4 @@ export const flujoDeCajaRoutes = {
   'finances/monthly-report': monthlyReportController,
   'finances/export': exportController,
 };
+

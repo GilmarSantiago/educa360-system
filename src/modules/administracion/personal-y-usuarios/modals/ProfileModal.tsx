@@ -20,7 +20,7 @@ import {
   Trash2,
   Sparkles,
 } from 'lucide-react';
-import { AuthUser } from '@/types';
+import { AuthUser } from '@/shared/types';
 import { AlertType } from '@/shared/ui/AlertToast';
 import { ModalTemplate, Button } from '@/shared';
 

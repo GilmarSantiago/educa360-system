@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Clock,
 } from 'lucide-react';
+import loginBg from '../assets/login-bg.png';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export default function LoginPage() {
     <div
       className="min-h-screen w-full flex items-center justify-center relative p-4 sm:p-6"
       style={{
-        backgroundImage: "url('/images/login-bg.png')",
+        backgroundImage: `url(${loginBg.src})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',

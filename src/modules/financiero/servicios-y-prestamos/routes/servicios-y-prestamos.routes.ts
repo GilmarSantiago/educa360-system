@@ -5,3 +5,4 @@ export const serviciosYPrestamosRoutes = {
   'finances/loans': loansController,
   'finances/recurring': recurringController,
 };
+

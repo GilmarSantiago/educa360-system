@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { X, Printer, CheckCircle2, ShieldCheck, Building2, User, Calendar, CreditCard, FileText } from 'lucide-react';
-import { OfficialReceiptData } from '@/types';
+import { OfficialReceiptData } from '@/shared/types';
 
 interface OfficialReceiptPrintModalProps {
   receipt: OfficialReceiptData | null;

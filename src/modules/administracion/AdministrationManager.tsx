@@ -42,7 +42,7 @@ import {
   Student,
   Enrollment,
   EnrollmentDiscountType,
-} from '@/types';
+} from '@/shared/types';
 import { AlertType } from '@/shared/ui/AlertToast';
 import Pagination from '@/shared/ui/Pagination';
 import IntegralEnrollmentWizardModal from '@/modules/administracion/admision-y-matriculas/modals/IntegralEnrollmentWizardModal';

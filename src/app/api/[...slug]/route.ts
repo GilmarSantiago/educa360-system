@@ -89,3 +89,4 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ slug: str
 export async function DELETE(req: NextRequest, ctx: { params: Promise<{ slug: string[] }> }) {
   return dispatch(req, ctx, 'DELETE');
 }
+

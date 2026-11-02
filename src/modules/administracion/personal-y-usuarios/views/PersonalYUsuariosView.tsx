@@ -26,7 +26,7 @@ import {
   Sliders,
   AlertTriangle,
 } from 'lucide-react';
-import { ManagedUser, UserRole } from '@/types';
+import { ManagedUser, UserRole } from '@/shared/types';
 import { AlertType } from '@/shared/ui/AlertToast';
 import Pagination from '@/shared/ui/Pagination';
 

@@ -26,7 +26,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
-import { AuthUser, UserRole } from '@/types';
+import { AuthUser, UserRole } from '@/shared/types';
 
 interface SubmoduleItem {
   id: string;

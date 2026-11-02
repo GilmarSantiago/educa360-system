@@ -33,7 +33,7 @@ import {
   CreditCard,
   X,
 } from 'lucide-react';
-import { SchoolInstitutionProfile, SchoolConfig, AcademicYear, FeeConcept, FeeRule, FeeCategory } from '@/types';
+import { SchoolInstitutionProfile, SchoolConfig, AcademicYear, FeeConcept, FeeRule, FeeCategory } from '@/shared/types';
 import { AlertType } from '@/shared/ui/AlertToast';
 import Pagination from '@/shared/ui/Pagination';
 

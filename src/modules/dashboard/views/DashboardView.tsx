@@ -13,7 +13,7 @@ import {
 import { FinancesManager } from '@/modules/financiero';
 import { TenantsManager } from '@/modules/saas';
 import { IdleSessionWatcher } from '@/modules/auth';
-import { AuthUser } from '@/types';
+import { AuthUser } from '@/shared/types';
 import {
   Building2,
   Users,

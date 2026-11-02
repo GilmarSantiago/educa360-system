@@ -7,3 +7,4 @@ export const authRoutes = {
   'auth/logout': logoutController,
   'auth/me': meController,
 };
+

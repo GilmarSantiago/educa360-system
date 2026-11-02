@@ -15,9 +15,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Educa360 | Sistema Integral de Gestión Educativa",
   description: "Plataforma cloud ERP y SaaS para la gestión académica, administrativa y financiera de instituciones educativas.",
-  icons: {
-    icon: "/favicon.ico",
-  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

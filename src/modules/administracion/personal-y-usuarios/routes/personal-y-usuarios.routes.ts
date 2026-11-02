@@ -9,3 +9,4 @@ export const personalYUsuariosRoutes = {
   'user/avatar': avatarController,
   'user/change-password': changePasswordController,
 };
+

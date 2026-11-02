@@ -10,7 +10,7 @@ import {
   Power,
   Layers,
 } from 'lucide-react';
-import { TenantItem } from '@/types';
+import { TenantItem } from '@/shared/types';
 import { AlertType } from '@/shared/ui/AlertToast';
 import Pagination from '@/shared/ui/Pagination';
 import {
