@@ -1,1 +1,1 @@
-export { POST } from '@/modules/users/controllers/change-password.controller';
+export { POST } from '@/modules/administracion/personal-y-usuarios/controllers/change-password.controller';

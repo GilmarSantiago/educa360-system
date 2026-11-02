@@ -1,1 +1,1 @@
-export { GET, POST, PUT, PATCH } from '@/modules/users/controllers/users.controller';
+export { GET, POST, PUT, PATCH } from '@/modules/administracion/personal-y-usuarios/controllers/users.controller';

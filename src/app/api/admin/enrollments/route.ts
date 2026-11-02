@@ -1,1 +1,1 @@
-export { GET, POST } from '@/modules/administration/controllers/enrollments.controller';
+export { GET, POST } from '@/modules/administracion/admision-y-matriculas/controllers/enrollments.controller';

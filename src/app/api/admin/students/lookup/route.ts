@@ -1,1 +1,1 @@
-export { GET } from '@/modules/administration/controllers/student-lookup.controller';
+export { GET } from '@/modules/administracion/padron-de-alumnos/controllers/student-lookup.controller';

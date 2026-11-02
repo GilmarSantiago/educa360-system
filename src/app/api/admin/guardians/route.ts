@@ -1,1 +1,1 @@
-export { GET, POST } from '@/modules/administration/controllers/guardians.controller';
+export { GET, POST } from '@/modules/administracion/familias-y-apoderados/controllers/guardians.controller';

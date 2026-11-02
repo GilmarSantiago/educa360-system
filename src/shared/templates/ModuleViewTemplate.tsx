@@ -80,3 +80,4 @@ export function ModuleViewTemplate({
   );
 }
 export default ModuleViewTemplate;
+

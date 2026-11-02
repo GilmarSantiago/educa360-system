@@ -1,1 +1,1 @@
-export { GET } from '@/modules/finances/controllers/monthly-report.controller';
+export { GET } from '@/modules/financiero/flujo-de-caja/controllers/monthly-report.controller';

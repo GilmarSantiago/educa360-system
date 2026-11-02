@@ -1,1 +1,1 @@
-export { GET, POST } from '@/modules/administration/controllers/academic-structure.controller';
+export { GET, POST } from '@/modules/administracion/aulas-y-vacantes/controllers/academic-structure.controller';

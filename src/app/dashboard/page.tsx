@@ -4,34 +4,31 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/shared/layout/Sidebar';
 import AlertToast, { AlertNotification, AlertType } from '@/shared/ui/AlertToast';
-import { UsersManager, ProfileModal } from '@/modules/users';
+import {
+  AdministrationManager,
+  DatosYReglasView as InstitutionManager,
+  PersonalYUsuariosView as UsersManager,
+  ProfileModal,
+} from '@/modules/administracion';
+import { FinancesManager } from '@/modules/financiero';
 import { TenantsManager } from '@/modules/saas';
-import { FinancesManager } from '@/modules/finances';
-import { AdministrationManager } from '@/modules/administration';
-import { InstitutionManager } from '@/modules/institution';
 import { IdleSessionWatcher } from '@/modules/auth';
 import { AuthUser } from '@/types';
 import {
   Building2,
   Users,
-  BookOpen,
-  HeartHandshake,
   DollarSign,
   CheckCircle2,
-  Clock,
   PlusCircle,
   Sliders,
   Wallet,
   Calendar,
-  Lock,
   FileCheck2,
   RefreshCw,
-  Sparkles,
   GraduationCap,
   LogOut,
   UserCheck,
   ChevronDown,
-  Shield,
   KeyRound,
   Layers,
 } from 'lucide-react';
@@ -82,20 +79,21 @@ export default function DashboardPage() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('');
+  const userRole = user?.role;
 
   // Cambiar de pestaña y persistir en URL + localStorage
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('educa360_active_tab', tab);
-      if (user?.role) {
-        localStorage.setItem(`educa360_tab_${user.role}`, tab);
+      if (userRole) {
+        localStorage.setItem(`educa360_tab_${userRole}`, tab);
       }
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.set('tab', tab);
       window.history.replaceState({}, '', currentUrl.toString());
     }
-  }, [user?.role]);
+  }, [userRole]);
 
   // Notificaciones Toast / Alertas
   const [alerts, setAlerts] = useState<AlertNotification[]>([]);

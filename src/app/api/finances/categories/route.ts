@@ -1,1 +1,1 @@
-export { GET, POST, PUT, DELETE } from '@/modules/finances/controllers/categories.controller';
+export { GET, POST, PUT, DELETE } from '@/modules/financiero/flujo-de-caja/controllers/categories.controller';

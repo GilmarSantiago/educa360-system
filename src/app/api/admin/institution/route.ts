@@ -1,1 +1,1 @@
-export { GET, POST } from '@/modules/institution/controllers/institution.controller';
+export { GET, POST } from '@/modules/administracion/datos-y-reglas/controllers/institution.controller';

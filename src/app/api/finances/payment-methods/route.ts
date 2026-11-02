@@ -1,1 +1,1 @@
-export { GET, POST } from '@/modules/finances/controllers/payment-methods.controller';
+export { GET, POST } from '@/modules/financiero/flujo-de-caja/controllers/payment-methods.controller';

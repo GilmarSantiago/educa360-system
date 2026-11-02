@@ -103,3 +103,4 @@ export function DataTableTemplate({
   );
 }
 export default DataTableTemplate;
+

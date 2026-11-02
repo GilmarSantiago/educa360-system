@@ -1,0 +1,9 @@
+export { default as AdministrationManager } from './AdministrationManager';
+export { default as DatosYReglasView } from './datos-y-reglas/views/DatosYReglasView';
+export { default as PersonalYUsuariosView } from './personal-y-usuarios/views/PersonalYUsuariosView';
+export { default as ProfileModal } from './personal-y-usuarios/modals/ProfileModal';
+export { default as AulasYVacantesView } from './aulas-y-vacantes/views/AulasYVacantesView';
+export { default as FamiliasYApoderadosView } from './familias-y-apoderados/views/FamiliasYApoderadosView';
+export { default as PadronDeAlumnosView } from './padron-de-alumnos/views/PadronDeAlumnosView';
+export { default as AdmisionYMatriculasView } from './admision-y-matriculas/views/AdmisionYMatriculasView';
+export { default as IntegralEnrollmentWizardModal } from './admision-y-matriculas/modals/IntegralEnrollmentWizardModal';

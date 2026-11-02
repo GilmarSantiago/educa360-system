@@ -1,1 +1,1 @@
-export { GET, POST } from '@/modules/administration/controllers/students.controller';
+export { GET, POST } from '@/modules/administracion/padron-de-alumnos/controllers/students.controller';
