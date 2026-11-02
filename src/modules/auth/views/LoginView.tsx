@@ -42,13 +42,21 @@ export default function LoginPage() {
       if (reason === 'timeout') {
         setSessionNotice({
           type: 'timeout',
-          message: 'Tu sesión se cerró automáticamente tras 20 minutos de inactividad para resguardar la privacidad de los datos escolares.',
+          message: 'Tu sesión se cerró automáticamente por inactividad.',
         });
       } else if (reason === 'expired') {
         setSessionNotice({
           type: 'expired',
-          message: 'Tu sesión ha vencido por seguridad. Por favor, ingresa tus credenciales nuevamente.',
+          message: 'Tu sesión ha vencido por seguridad. Ingresa nuevamente.',
         });
+      }
+
+      if (reason) {
+        window.history.replaceState({}, '', '/');
+        const timer = setTimeout(() => {
+          setSessionNotice(null);
+        }, 3500);
+        return () => clearTimeout(timer);
       }
     }
   }, []);
@@ -99,6 +107,33 @@ export default function LoginPage() {
     >
       {/* Overlay institucional con los colores de marca Educa360 */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#0f172a]/85 via-[#223a5e]/75 to-[#2fbf71]/50 backdrop-blur-[2px] pointer-events-none" />
+
+      {/* Alerta flotante temporal (no altera el tamaño ni diseño de la tarjeta de Login) */}
+      {sessionNotice && (
+        <div
+          className={`fixed top-5 right-5 z-50 max-w-sm px-4 py-3 rounded-2xl border shadow-xl backdrop-blur-md flex items-center gap-3 text-xs animate-in fade-in slide-in-from-top-2 duration-200 ${
+            sessionNotice.type === 'timeout'
+              ? 'bg-amber-50/95 border-amber-200 text-amber-900'
+              : 'bg-blue-50/95 border-blue-200 text-blue-900'
+          }`}
+        >
+          <Clock
+            className={`w-4 h-4 shrink-0 ${
+              sessionNotice.type === 'timeout' ? 'text-amber-600' : 'text-blue-600'
+            }`}
+          />
+          <div>
+            <p className="font-extrabold text-[11px] uppercase tracking-wider">
+              {sessionNotice.type === 'timeout'
+                ? 'Sesión Cerrada por Inactividad'
+                : 'Sesión Finalizada'}
+            </p>
+            <p className="text-xs text-slate-700 font-medium">
+              {sessionNotice.message}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Contenedor Principal */}
       <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -172,32 +207,6 @@ export default function LoginPage() {
                 Ingresa tus credenciales para acceder al campus
               </p>
             </div>
-
-            {sessionNotice && (
-              <div
-                className={`mb-4 p-3.5 rounded-2xl border flex items-start gap-3 text-xs leading-relaxed animate-in fade-in duration-200 ${
-                  sessionNotice.type === 'timeout'
-                    ? 'bg-amber-50/95 border-amber-200 text-amber-900'
-                    : 'bg-blue-50/95 border-blue-200 text-blue-900'
-                }`}
-              >
-                <Clock
-                  className={`w-4 h-4 shrink-0 mt-0.5 ${
-                    sessionNotice.type === 'timeout' ? 'text-amber-600' : 'text-blue-600'
-                  }`}
-                />
-                <div>
-                  <p className="font-extrabold text-[11px] uppercase tracking-wider">
-                    {sessionNotice.type === 'timeout'
-                      ? 'Sesión Cerrada por Inactividad'
-                      : 'Sesión Finalizada'}
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-700 font-medium">
-                    {sessionNotice.message}
-                  </p>
-                </div>
-              </div>
-            )}
 
             {error && (
               <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-center gap-2.5 text-xs text-rose-700 animate-in fade-in">
